@@ -9,8 +9,7 @@ import re
 import string
 from bs4 import BeautifulSoup
 from blib.pyurllib import urlread2
-XML_DECODER = "lxml"
-
+from config import XML_decoder
 
 # Novel
 
@@ -26,7 +25,7 @@ def get_novel_blocks():
 
 def get_novel(novel_url):
     data = urlread2(novel_url)
-    soup = BeautifulSoup(data, XML_DECODER)
+    soup = BeautifulSoup(data, XML_decoder)
     novel_text = soup.find("tbody").tr.td.getText()
     novel_title = soup.find_all("div", attrs={"class": "layout mt10"})[2].find("font", attrs={"color": "#000"}).getText()
     return novel_title, novel_text
@@ -34,7 +33,7 @@ def get_novel(novel_url):
 
 def get_novel_list_count(block_url_head):
     data = urlread2(block_url_head)
-    soup = BeautifulSoup(data, XML_DECODER)
+    soup = BeautifulSoup(data, XML_decoder)
     end_page_url = soup.find("div", attrs={"class": "pageNav px19"}).find_all("a")[-1].get("href")
     end_index = string.atoi(re.findall("\d*?.html", end_page_url)[0][:-5])
     return end_index
@@ -46,7 +45,7 @@ def get_novel_list(block_url_head, index):
         block_url_append = "index_%d.html" % (index + 1)
         block_url_head += block_url_append
     data = urlread2(block_url_head)
-    soup = BeautifulSoup(data, XML_DECODER)
+    soup = BeautifulSoup(data, XML_decoder)
     url_soup_list = soup.find("ul", attrs={"class": "textList"}).find_all("a")
     novel_url_list = []
     for url_soup in url_soup_list:
