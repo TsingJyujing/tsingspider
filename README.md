@@ -1,2 +1,28 @@
 # DataSpider
-Spider cluster of several data source
+让大家方便的使用各种数据
+
+## 前言
+数据获取最脏最累的活就是下载和清洗数据，其中下载各种各样的数据其实是很要命的事情。
+这个爬虫系统所做的事情就是将肮脏的部分包裹起来，能通过代码获取干净的数据（至于怎么存储就不是在下关心的问题了）
+
+说是爬虫系统，其实并不是传统意义上的爬虫，而是更加倾向于搜索和收集信息的一个接口。
+
+希望大家能玩得开心。
+
+**有一些爬虫因为不可描述的原因我不会放文档，见谅。**
+
+## 财经爬虫
+### 财新网爬虫
+财新网爬虫与其说是爬虫，不如说是一个<搜索-下载>系统。
+首先要获取所有的文章链接，请使用这个接口：
+```python
+from bdata.finance.caixin_news import query_urls
+query_urls(from_date, to_date, query_words)
+```
+该函数的作用是搜索所有的含有query_words的文章超链接，其中：
+from_date和to_date是开始和结束时间，query_words是关键词。
+时间格式：yyyy-mm-dd
+使用样例：
+```python
+query_urls('2016-09-01', '2016-09-30', '英镑')
+```
