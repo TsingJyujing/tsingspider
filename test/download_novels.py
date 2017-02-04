@@ -3,6 +3,7 @@
 """
 Created on 2017-2-3
 @author: Yuan Yi fan
+测试集下载使用的函数，请不要使用
 """
 
 from bdata.porn.yiren22 import *
@@ -21,7 +22,7 @@ def init_sql_conn():
     return psycopg2.connect(
         database="postgres",
         user="postgres",
-        password="979323846",
+        password="postgres_pwd",
         host="localhost",
         port="5432")
 

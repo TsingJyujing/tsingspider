@@ -1,3 +1,11 @@
+#!/bin/python
+# -*- coding: utf-8 -*-
+"""
+Created on 2017-2-3
+@author: Yuan Yi fan
+
+处理超链接以及超链接获取的BeautifulSoup类
+"""
 import urllib2
 import re
 from bs4 import BeautifulSoup

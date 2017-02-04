@@ -3,6 +3,8 @@
 """
 Created on 2017-2-3
 @author: Yuan Yi fan
+A spider to get pron novels
+TODO: get pictures from this website
 """
 
 import re
@@ -11,9 +13,11 @@ from bs4 import BeautifulSoup
 from blib.pyurllib import urlread2
 from config import XML_decoder
 
-# Novel
 
 def get_novel_blocks():
+    """
+    获取所有小说版块的父级URL
+    """
     block_head_list = ["dushijiqing", "jiatingluanlun", "yinqijiaohuan",
                        "gudianwuxia", "xiaoyuanchunse", "changpianlianzai",
                        "huangsexiaohua", "qiangjianxilie"]
@@ -24,14 +28,21 @@ def get_novel_blocks():
 
 
 def get_novel(novel_url):
+    """
+    通过小说文章的URL获取小说的标题和内容
+    """
     data = urlread2(novel_url)
     soup = BeautifulSoup(data, XML_decoder)
     novel_text = soup.find("tbody").tr.td.getText()
-    novel_title = soup.find_all("div", attrs={"class": "layout mt10"})[2].find("font", attrs={"color": "#000"}).getText()
+    novel_title = soup.find_all("div", attrs={"class": "layout mt10"})[2].find("font",
+                                                                               attrs={"color": "#000"}).getText()
     return novel_title, novel_text
 
 
 def get_novel_list_count(block_url_head):
+    """
+    通过父级URL获取小说列表的页面数量
+    """
     data = urlread2(block_url_head)
     soup = BeautifulSoup(data, XML_decoder)
     end_page_url = soup.find("div", attrs={"class": "pageNav px19"}).find_all("a")[-1].get("href")
@@ -40,6 +51,9 @@ def get_novel_list_count(block_url_head):
 
 
 def get_novel_list(block_url_head, index):
+    """
+    通过父级URL和Index获取列表中的小说URL（一般是25个/页）
+    """
     host = re.findall("http://.*?/", block_url_head)[0][:-1]
     if index != 0:
         block_url_append = "index_%d.html" % (index + 1)
