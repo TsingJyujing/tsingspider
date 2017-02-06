@@ -26,3 +26,21 @@ from_date和to_date是开始和结束时间，query_words是关键词。
 ```python
 query_urls('2016-09-01', '2016-09-30', '英镑')
 ```
+
+## 社交网络爬虫
+### 豆瓣爬虫
+豆瓣爬虫使用了豆瓣的API，但是貌似获取的频次有限制，如果有豆瓣的API Key的希望能贡献一下。
+目前仅仅支持书籍和电影。
+API格式如下(以获取书籍的JSON结构体为例)：
+```python
+from bdata.social_network.douban import get_book_json
+get_book_json(ID)
+```
+请直接查看文件的注释，函数命名的格式是：
+
+`get_[movie/book]_[json/info](id)`
+
+## 其它爬虫
+### DNC邮件泄露事件
+这个文件可以下载2016年美国民主党邮件服务器泄露事件所泄露出的所有邮件，大约有两万多封，但是由于服务器比较特殊，需要翻墙才能下载。
+其中包含`get_mail_data`和`save_mail`两个接口，一个仅仅读取为字符串，另一个仅仅保存到本地。
