@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 from config import request_timeout, user_agent, XML_decoder
 
 
-def urlread2(url, retry_times=1):
+def urlread2(url, retry_times=10):
     for i in range(retry_times):
         try:
             req_header = {
@@ -27,7 +27,7 @@ def urlread2(url, retry_times=1):
     print "Error while reading:", url
 
 
-def get_soup(url, retry_tms=1):
+def get_soup(url, retry_tms=10):
     for i in range(retry_tms):
         try:
             return BeautifulSoup(urlread2(url), XML_decoder)  # html.parser

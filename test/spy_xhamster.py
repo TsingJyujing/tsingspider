@@ -8,6 +8,9 @@ from bdata.porn import xhamster
 import psycopg2
 from blib.list_file_io import read_strlist, write_strlist
 import string
+import threading
+import traceback
+
 
 def genSQLConnection():
     return psycopg2.connect(
@@ -35,13 +38,13 @@ def loadUnprocessedID():
 
 
 def genSQLStringArray(listInput):
-    listInput = ['"' + x + '"' for x in listInput]
+    listInput = ['"' + processSQLString(x) + '"' for x in listInput]
     return "{" + ",".join(listInput) + "}"
 
 
 def genSQLStatment(url, sp):
     id = xhamster.getPageID(url)
-    title = xhamster.getTitleFromSoup(sp)
+    title = processSQLString(xhamster.getTitleFromSoup(sp))
     imgList = xhamster.getPreviewImgList(sp)
     imgurls = genSQLStringArray(imgList)
     xhamster.downloadImgList(id, imgList, "D:/HTTP_DIR/xhamster_pool")
@@ -64,14 +67,58 @@ def exe_sql(sql_connection, sql_cmd):
         sql_connection.commit()
         cur.close()
 
-if __name__ == "__main__":
+
+def processSQLString(raw_str):
+    return raw_str.replace("'", "`")
+
+
+def process_unprocessed_set(pURLSet, upURLSet):
+    saving_flag = 0
     conn = genSQLConnection()
-    processedIDSet = getIDSet(conn)
-    unprocessedIDSet = loadUnprocessedID()
+    while( len(upURLSet) > 0 ):
+        this_id = upURLSet.pop()
+        if this_id in upURLSet:
+            continue
+        try:
+            saving_flag += 1
+            this_url = xhamster.genURL(this_id)
+            page_data, sp = xhamster.getSoup(this_url)
+            exe_sql(conn, genSQLStatment(this_url, sp))
+            pURLSet.add(this_id)
+            new_ids = xhamster.getJumpUrls(page_data)
+            new_ids = set([xhamster.getPageID(x) for x in new_ids]) - upURLSet
+            upURLSet |= new_ids
+            print "Now size:", len(upURLSet)
+        except Exception, e:
+            upURLSet.add(this_id)
+            print "Error while processing %d" % this_id
+            print e.message
+            print traceback.format_exc()
 
-    saveing_flag = 0
+        if saving_flag>=1000:
+            saving_flag = 0
+            write_strlist(
+                "xhamster.unprocessed.list",
+                [("%d" % x) for x in unprocessedIDSet])
 
-    while(True):
+if __name__ == "__main__":
+    main_conn = genSQLConnection()
+    processedIDSet = getIDSet(main_conn)
+    unprocessedIDSet = loadUnprocessedID() - processedIDSet
+
+    ths = []
+    for i in range(64):
+        ths.append(threading.Thread(
+            target=process_unprocessed_set,
+            args=(processedIDSet, unprocessedIDSet)))
+
+    for th in ths:
+        th.start()
+
+    for th in ths:
+        th.join()
+"""
+while(True):
         upSize = len(unprocessedIDSet)
         if upSize == 0:
             break
@@ -96,3 +143,4 @@ if __name__ == "__main__":
             write_strlist(
                 "xhamster.unprocessed.list",
                 [("%d" % x) for x in unprocessedIDSet])
+"""
