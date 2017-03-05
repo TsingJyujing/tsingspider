@@ -4,13 +4,20 @@
 Created on 2017-3-2
 @author: Yuan Yi fan
 """
+import sys
+sys.path.append("..")
 from bdata.porn import xhamster
 import psycopg2
 from blib.list_file_io import read_strlist, write_strlist
 import string
 import threading
 import traceback
+import time
+import Queue
 
+saving_path = "/home/yuanyifan/Data/xhamster/xhamster_pool"
+download_images = True
+mutex = threading.Lock()
 
 def genSQLConnection():
     return psycopg2.connect(
@@ -28,6 +35,7 @@ def getIDSet(sql_connection):
     res = cur.fetchall()
     cur.close()
     return set([x[0] for x in res])
+
 
 def loadUnprocessedID():
     try:
@@ -47,7 +55,8 @@ def genSQLStatment(url, sp):
     title = processSQLString(xhamster.getTitleFromSoup(sp))
     imgList = xhamster.getPreviewImgList(sp)
     imgurls = genSQLStringArray(imgList)
-    xhamster.downloadImgList(id, imgList, "D:/HTTP_DIR/xhamster_pool")
+    if download_images:
+        xhamster.downloadImgList(id, imgList, saving_path)
     categories = genSQLStringArray(xhamster.getCategories(sp))
     rating = xhamster.getRating(sp)
     video_time = xhamster.getTime(sp)
@@ -71,76 +80,70 @@ def exe_sql(sql_connection, sql_cmd):
 def processSQLString(raw_str):
     return raw_str.replace("'", "`")
 
+    
+def queueSQLExecutor(sql_queue):
+    conn = genSQLConnection()
+    while(True):
+        try:
+            sql_cmd = sql_queue.get(timeout=120)
+            try:
+                exe_sql(conn, sql_cmd)
+            except Exception,e:
+                print "Error to execute SQL caused by: ", e.message
+            print "Executed: %s" % sql_cmd
+        except:
+            conn.close()
+            break;
+    
 
-def process_unprocessed_set(pURLSet, upURLSet):
+def process_unprocessed_set(processed_url_set, unprocessed_url_set, sql_queue):
     saving_flag = 0
     conn = genSQLConnection()
-    while( len(upURLSet) > 0 ):
-        this_id = upURLSet.pop()
-        if this_id in upURLSet:
+    while len(unprocessed_url_set) > 0:
+        this_id = unprocessed_url_set.pop()
+        if this_id in processed_url_set:
             continue
         try:
             saving_flag += 1
             this_url = xhamster.genURL(this_id)
             page_data, sp = xhamster.getSoup(this_url)
-            exe_sql(conn, genSQLStatment(this_url, sp))
-            pURLSet.add(this_id)
+            sql_queue.put(genSQLStatment(this_url, sp))
+            processed_url_set.add(this_id)
             new_ids = xhamster.getJumpUrls(page_data)
-            new_ids = set([xhamster.getPageID(x) for x in new_ids]) - upURLSet
-            upURLSet |= new_ids
-            print "Now size:", len(upURLSet)
+            new_ids = set([xhamster.getPageID(x) for x in new_ids]) - unprocessed_url_set
+            unprocessed_url_set |= new_ids
+            print "Now unprocessed list size:", len(unprocessed_url_set)
         except Exception, e:
-            upURLSet.add(this_id)
+            unprocessed_url_set.add(this_id)
             print "Error while processing %d" % this_id
             print e.message
             print traceback.format_exc()
-
-        if saving_flag>=1000:
+            time.sleep(1)
+            
+        if saving_flag >= 1000:
             saving_flag = 0
             write_strlist(
                 "xhamster.unprocessed.list",
                 [("%d" % x) for x in unprocessedIDSet])
 
+
 if __name__ == "__main__":
     main_conn = genSQLConnection()
     processedIDSet = getIDSet(main_conn)
     unprocessedIDSet = loadUnprocessedID() - processedIDSet
-
-    ths = []
-    for i in range(64):
-        ths.append(threading.Thread(
+    thread_count = 80
+    threads_list = []
+    SQLqueue = Queue.Queue()
+    
+    for i in range(thread_count):
+        threads_list.append(threading.Thread(
             target=process_unprocessed_set,
-            args=(processedIDSet, unprocessedIDSet)))
-
-    for th in ths:
+            args=(processedIDSet, unprocessedIDSet, SQLqueue)))
+    
+    for th in threads_list:
         th.start()
 
-    for th in ths:
+    queueSQLExecutor(SQLqueue)
+    
+    for th in threads_list:
         th.join()
-"""
-while(True):
-        upSize = len(unprocessedIDSet)
-        if upSize == 0:
-            break
-        else:
-            print "Unprocessed size:%d" % upSize
-        this_id = unprocessedIDSet.pop()
-        if this_id in processedIDSet:
-            continue
-        try:
-            saveing_flag += 1
-            this_url = xhamster.genURL(this_id)
-            page_data, sp = xhamster.getSoup(this_url)
-            exe_sql(conn, genSQLStatment(this_url, sp))
-            processedIDSet.add(this_id)
-            new_ids = xhamster.getJumpUrls(page_data)
-            new_ids = set([xhamster.getPageID(x) for x in new_ids]) - processedIDSet
-            unprocessedIDSet |= new_ids
-        except:
-            print "Error"
-        if saveing_flag >= 100:
-            saveing_flag = 0
-            write_strlist(
-                "xhamster.unprocessed.list",
-                [("%d" % x) for x in unprocessedIDSet])
-"""
