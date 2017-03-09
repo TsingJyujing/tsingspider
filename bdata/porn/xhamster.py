@@ -72,7 +72,7 @@ def getPreviewImgList(sp):
 def getDownloadLink(sp):
     res = sp.find('a', attrs={"class": "download", "id": "video_download"})
     url_download = res.get('href')
-    if not url_download[:4] == "https":
+    if not url_download[:5] == "https":
         url_download = "https" + url_download[4:]
     return url_download
 

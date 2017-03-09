@@ -15,7 +15,7 @@ import traceback
 import time
 import Queue
 
-saving_path = "/home/yuanyifan/Data/xhamster/xhamster_pool"
+saving_path = "D:/HTTP_DIR/xhamster_pool"
 download_images = True
 mutex = threading.Lock()
 
@@ -24,7 +24,7 @@ def genSQLConnection():
         database="pvideo",
         user="postgres",
         password="979323",
-        host="localhost",
+        host="192.168.1.103",
         port="5432")
 
 
