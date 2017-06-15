@@ -6,10 +6,12 @@ Created on 2017-2-3
 
 处理超链接以及超链接获取的BeautifulSoup类
 """
+import os
+import urllib
 import urllib2
 import re
 from bs4 import BeautifulSoup
-
+import threading
 from config import request_timeout, user_agent, XML_decoder
 
 
@@ -36,3 +38,46 @@ def get_soup(url, retry_tms=10):
             if e.code == 301:
                 return BeautifulSoup("", XML_decoder)
             print "Retrying to get data of %s" % url
+
+
+def download_callback(block_download_count, block_size, file_size, display_name="/dev/null"):
+    process_percent = block_download_count * block_size * 100.0 / file_size
+    print "%f%% of %s" % (process_percent, display_name)
+
+
+class CreateDownloadTask(threading.Thread):
+    """
+    File download module
+    """
+
+    def __init__(self, src_url, dst_path):
+        # type: (string, string) -> CreateDownloadTask
+        threading.Thread.__init__(self)
+        self.url = src_url
+        self.dst = dst_path
+
+    def run(self):
+        urllib.urlretrieve(
+            url=self.url,
+            filename=self.dst,
+            reporthook=lambda a, b, c: download_callback(a, b, c, "%s-->%s" % (self.url, self.dst)))
+
+
+class LiteFileDownloader(threading.Thread):
+    """
+    小文件下载线程
+    """
+    def __init__(self, image_url, filename):
+        threading.Thread.__init__(self)
+        self.image_url = image_url
+        self.filename = filename
+        self.done = 0
+
+    def run(self):
+        if not os.path.exists(self.filename):  # 已经下载过了
+            data = urlread2(url=self.image_url)
+            if data is not None:
+                with open(self.filename, 'wb') as fid:
+                    fid.write(data)
+
+
