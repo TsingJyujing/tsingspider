@@ -67,6 +67,7 @@ class LiteFileDownloader(threading.Thread):
     """
     小文件下载线程
     """
+
     def __init__(self, image_url, filename):
         threading.Thread.__init__(self)
         self.image_url = image_url
@@ -81,3 +82,42 @@ class LiteFileDownloader(threading.Thread):
                     fid.write(data)
 
 
+class LiteDataDownloader(threading.Thread):
+    """
+    小文件下载线程(数据缓存)
+    """
+    def __init__(self, image_url, tag):
+        threading.Thread.__init__(self)
+        self.image_url = image_url
+        self.data = None
+        self.tag = tag
+
+    def run(self):
+        self.data = urlread2(url=self.image_url)
+
+    def write_file(self, filename):
+        if self.data is not None:
+            with open(filename, 'wb') as fid:
+                fid.write(self.data)
+
+def downloadingInfomation(block_download_count, block_size, file_size, display_name="/dev/null"):
+    process_percent = block_download_count * block_size * 100.0 / file_size
+    print "%f%% of %s" % (process_percent, display_name)
+
+
+class CreateDownloadTask(threading.Thread):
+    """
+    File download module
+    """
+
+    def __init__(self, src_url, dst_path):
+        # type: (string, string) -> CreateDownloadTask
+        threading.Thread.__init__(self)
+        self.url = src_url
+        self.dst = dst_path
+
+    def run(self):
+        urllib.urlretrieve(
+            url=self.url,
+            filename=self.dst,
+            reporthook=lambda a, b, c: download_callback(a, b, c, "%s-->%s" % (self.url, self.dst)))
