@@ -9,7 +9,7 @@ Created on 2017-2-3
 import re
 
 
-def get_extesion(uri):
+def get_extension(uri):
     """
     提取路径中的后缀（你看我都写了些什么鬼）
     :param uri:

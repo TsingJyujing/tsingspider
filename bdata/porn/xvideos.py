@@ -4,7 +4,11 @@
 Created on 2017-3-2
 @author: Yuan Yi fan
 """
+import json
 import re
+import sys
+import traceback
+
 from bs4 import BeautifulSoup
 from blib.pyurllib import urlread2, CreateDownloadTask
 from blib.str_util import validation_filename
@@ -26,7 +30,11 @@ def get_data_soup(url):
 
 
 def get_mp4_url(page_data):
-    return re.findall(r"html5player\.setVideoUrlHigh(.*?);", page_data)[0][2:-2]
+    url_map = json.loads(
+        re.findall(r"\"mp4\":{.*?}", page_data)[0][6:]
+    )
+    return
+    # return re.findall(r"html5player\.setVideoUrlHigh(.*?);", page_data)[0][2:-2]
 
 
 def get_title(page_soup):
@@ -53,8 +61,8 @@ def auto_process_urls(urls, save_path):
             download_thread = get_download_task(url, save_path)
             process_list.append(download_thread)
             download_thread.start()
-        except Exception as ex:
-            print "Error while appending task:", ex
+        except:
+            print("Error while appending task:" + traceback.format_exc(), file=sys.stderr)
 
     for process in process_list:
         process.join()

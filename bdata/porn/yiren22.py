@@ -72,11 +72,11 @@ if __name__ == "__main__":
     blocks = get_novel_blocks()
     for block_url in blocks:
         list_page_count = get_novel_list_count(block_url)
-        print "Get %d novel lists" % list_page_count
+        print("Get {} novel lists".format(list_page_count))
         for i in range(list_page_count):
             url_list = get_novel_list(block_url, i)
-            print "Get %d novel urls" % len(url_list)
+            print("Get {} novel urls".format(len(url_list)))
             for url in url_list:
                 novel_title_got, novel_text_got = get_novel(url)
-                print "Get novel: ", novel_title_got
-                print "Novel basic info:(%d words)" % (len(novel_text_got))
+                print("Get novel: " + novel_title_got)
+                print("Novel basic info:({} words)".format(len(novel_text_got)))

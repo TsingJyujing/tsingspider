@@ -9,6 +9,7 @@ Created on 2017-2-4
 from blib.pyurllib import urlread2
 import json
 
+
 def get_movie_info(movie_id):
     """
     :param movie_id: Index of Movie
@@ -39,5 +40,3 @@ def get_book_json(book_id):
     :return: json structure
     """
     return json.loads(get_book_info(book_id))
-
-

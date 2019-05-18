@@ -196,7 +196,7 @@ def process_page_url(url):
         text = get_page_text(page_soup)
         # 下载小文件
         img_task_list = [
-            LiteDataDownloader(image_url=img, tag="%d%s" % (i, get_extesion(img)))
+            LiteDataDownloader(image_url=img, tag="%d%s" % (i, get_extension(img)))
             for i, img in enumerate(images)]
         for task in img_task_list:
             task.start()
