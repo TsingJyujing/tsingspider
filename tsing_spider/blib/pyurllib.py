@@ -7,28 +7,31 @@ Created on 2017-2-3
 处理超链接以及超链接获取的BeautifulSoup类
 """
 
-import requests
-
 import os
-
-try:
-    from urllib.request import urlretrieve
-except:
-    from urllib import urlretrieve
 import re
-from bs4 import BeautifulSoup
 import threading
-from config import request_timeout, user_agent, XML_decoder
+from urllib.request import urlretrieve
+
+import requests
+from bs4 import BeautifulSoup
+
+from tsing_spider.config import REQUEST_TIMEOUT, USER_AGENT, XML_DECODER
 
 
-def urlread2(url, retry_times=10):
+def urlread2(url: str, retry_times: int = 10):
+    """
+    Get raw data by URL
+    :param url:
+    :param retry_times:
+    :return:
+    """
     for i in range(retry_times):
         try:
             return requests.get(
                 url,
-                timeout=request_timeout,
+                timeout=REQUEST_TIMEOUT,
                 headers={
-                    'User-Agent': user_agent,
+                    'User-Agent': USER_AGENT,
                     'Accept': '"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"',
                     'Accept-Language': 'zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3',
                     'Host': re.findall('://.*?/', url, re.DOTALL)[0][3:-1]
@@ -36,44 +39,29 @@ def urlread2(url, retry_times=10):
             ).content
         except:
             pass
-    print("Error while reading:" + url)
+    raise Exception("Error while reading:" + url)
 
 
-def get_soup(url, retry_tms=10):
-    for i in range(retry_tms):
-        try:
-            return BeautifulSoup(urlread2(url), XML_decoder)  # html.parser
-        except:
-            print("Retrying to get data of " + url)
-    return BeautifulSoup("", XML_decoder)
+def get_soup(url: str, retry_times: int = 10, xml_decoder: str = XML_DECODER):
+    return BeautifulSoup(urlread2(url, retry_times), xml_decoder)  # html.parser
 
 
-def download_callback(block_download_count, block_size, file_size, display_name="/dev/null"):
+def __download_callback(block_download_count: int, block_size: int, file_size: int, display_name: str = "FILE"):
+    """
+    Display download progress for debugging
+    :param block_download_count:
+    :param block_size:
+    :param file_size:
+    :param display_name:
+    :return:
+    """
     process_percent = block_download_count * block_size * 100.0 / file_size
     print("%f%% of %s" % (process_percent, display_name))
 
 
-class CreateDownloadTask(threading.Thread):
-    """
-    File download module
-    """
-
-    def __init__(self, src_url, dst_path):
-        # type: (str, str) -> CreateDownloadTask
-        threading.Thread.__init__(self)
-        self.url = src_url
-        self.dst = dst_path
-
-    def run(self):
-        urlretrieve(
-            url=self.url,
-            filename=self.dst,
-            reporthook=lambda a, b, c: download_callback(a, b, c, "%s-->%s" % (self.url, self.dst)))
-
-
 class LiteFileDownloader(threading.Thread):
     """
-    小文件下载线程
+    Little data download to file
     """
 
     def __init__(self, image_url, filename):
@@ -92,7 +80,7 @@ class LiteFileDownloader(threading.Thread):
 
 class LiteDataDownloader(threading.Thread):
     """
-    小文件下载线程(数据缓存)
+    Little data download to RAM buffer
     """
 
     def __init__(self, image_url, tag):
@@ -110,18 +98,13 @@ class LiteDataDownloader(threading.Thread):
                 fid.write(self.data)
 
 
-def downloading_information(block_download_count, block_size, file_size, display_name="/dev/null"):
-    process_percent = block_download_count * block_size * 100.0 / file_size
-    print("%f%% of %s" % (process_percent, display_name))
-
-
-class CreateDownloadTask(threading.Thread):
+class DownloadTask(threading.Thread):
     """
-    File download module
+    Large file download to file
     """
 
     def __init__(self, src_url, dst_path):
-        # type: (str, str) -> CreateDownloadTask
+        # type: (str, str) -> DownloadTask
         threading.Thread.__init__(self)
         self.url = src_url
         self.dst = dst_path
@@ -130,4 +113,4 @@ class CreateDownloadTask(threading.Thread):
         urlretrieve(
             url=self.url,
             filename=self.dst,
-            reporthook=lambda a, b, c: download_callback(a, b, c, "%s-->%s" % (self.url, self.dst)))
+            reporthook=lambda a, b, c: __download_callback(a, b, c, "%s-->%s" % (self.url, self.dst)))

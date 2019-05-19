@@ -5,7 +5,8 @@ Created on 2017-2-4
 @author: Yuan Yi fan
 """
 import re
-from blib.pyurllib import get_soup
+
+from tsing_spider.blib.pyurllib import get_soup
 
 search_base_dir = "http://search.caixin.com/search/"
 
@@ -46,7 +47,6 @@ def read_normal_article(url):
     for p in ps:
         text += p.get_text() + "\n"
     return title, text
-
 
 
 def read_blog(url):

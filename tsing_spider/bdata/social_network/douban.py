@@ -6,8 +6,9 @@ Created on 2017-2-4
 使用豆瓣 API 获取的各种数据
 """
 
-from blib.pyurllib import urlread2
 import json
+
+from tsing_spider.blib.pyurllib import urlread2
 
 
 def get_movie_info(movie_id):
