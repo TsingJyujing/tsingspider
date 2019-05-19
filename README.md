@@ -16,7 +16,7 @@
 财新网爬虫与其说是爬虫，不如说是一个<搜索-下载>系统。
 首先要获取所有的文章链接，请使用这个接口：
 ```python
-from bdata.finance.caixin_news import query_urls
+from tsing_spider.bdata.finance.caixin_news import query_urls
 query_urls(from_date, to_date, query_words)
 ```
 该函数的作用是搜索所有的含有query_words的文章超链接，其中：
@@ -28,12 +28,12 @@ query_urls('2016-09-01', '2016-09-30', '英镑')
 ```
 
 ## 社交网络爬虫
-### 豆瓣爬虫
+### 豆瓣爬虫（已经失效）
 豆瓣爬虫使用了豆瓣的API，但是貌似获取的频次有限制，如果有豆瓣的API Key的希望能贡献一下。
 目前仅仅支持书籍和电影。
 API格式如下(以获取书籍的JSON结构体为例)：
 ```python
-from bdata.social_network.douban import get_book_json
+from tsing_spider.bdata.social_network.douban import get_book_json
 get_book_json(ID)
 ```
 请直接查看文件的注释，函数命名的格式是：
