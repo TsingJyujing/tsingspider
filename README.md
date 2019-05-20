@@ -1,6 +1,12 @@
 # DataSpider
 让大家方便的使用各种数据
 
+## Install
+
+```bash
+pip3 install -e git+https://github.com/TsingJyujing/DataSpider.git#egg=TsingSpider
+```
+
 ## 前言
 数据获取最脏最累的活就是下载和清洗数据，其中下载各种各样的数据其实是很要命的事情。
 这个爬虫系统所做的事情就是将肮脏的部分包裹起来，能通过代码获取干净的数据（至于怎么存储就不是在下关心的问题了）
