@@ -5,7 +5,7 @@ Created on 2017-3-2
 @author: Yuan Yi fan
 """
 
-from tsing_spider.blib.pyurllib import get_soup
+from tsing_spider.blib.pyurllib import http_get_soup
 from tsing_spider.config import caoliu_host
 
 
@@ -40,7 +40,7 @@ def get_page_text(page_soup):
 
 
 def get_latest_urls(page_index):
-    index_soup = get_soup(__generate_index_page_url(page_index))
+    index_soup = http_get_soup(__generate_index_page_url(page_index))
     h3blocks = index_soup.find(name="tbody", attrs={"style": "table-layout:fixed;"}).find_all("h3")
     return_value = []
     for h3block in h3blocks:

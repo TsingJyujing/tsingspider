@@ -1,14 +1,15 @@
+import json
 import unittest
 
-from tsing_spider.bdata.porn import xvideos, xhamster, caoliu
-from tsing_spider.blib.pyurllib import get_soup
+from tsing_spider.bdata.porn import xvideos, xhamster, caoliu,sex8cc
+from tsing_spider.blib.pyurllib import http_get_soup
 
 
 class XhamsterTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.data = get_soup(
+        cls.data = http_get_soup(
             "https://m.xhamster.com/videos/hot-german-milf-female-teacher-show-how-to-fuck-private-11500990")
         assert cls.data is not None, "Data download failed."
         print("setUpClass successfully")
@@ -35,7 +36,7 @@ class XhamsterTest(unittest.TestCase):
 class XvideosTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        cls.data = get_soup("https://www.xvideos.com/video47916065/_~_~_2")
+        cls.data = http_get_soup("https://www.xvideos.com/video47916065/_~_~_2")
 
     def test_get_title(self):
         print(xvideos.get_title(self.data))
@@ -51,7 +52,7 @@ class CaoliuTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         urls = caoliu.get_latest_urls(2)
-        cls.data = get_soup(urls[0])
+        cls.data = http_get_soup(urls[0])
         assert cls.data is not None, "Data download failed."
         print("setUpClass successfully")
 
@@ -64,6 +65,22 @@ class CaoliuTest(unittest.TestCase):
     def test_get_images(self):
         print(caoliu.get_page_images(self.data))
 
+
+class Sex8ccTest(unittest.TestCase):
+
+    def test_forum_group(self):
+        g = sex8cc.ForumGroup(739)
+        print(g.forums_ids)
+
+    def test_forum(self):
+        f = sex8cc.Forum(110)
+        print(f.get_page_count())
+
+    def test_forum_page_thread(self):
+        f = sex8cc.ForumPage(110,3)
+        print(f.thread_list_url)
+        th = sex8cc.ForumThread(f.thread_list_url[0])
+        print("PageInfo:\n" + json.dumps(th.create_document(),indent=2))
 
 if __name__ == '__main__':
     unittest.main()

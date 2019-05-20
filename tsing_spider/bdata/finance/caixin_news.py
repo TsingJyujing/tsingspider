@@ -6,7 +6,7 @@ Created on 2017-2-4
 """
 import re
 
-from tsing_spider.blib.pyurllib import get_soup
+from tsing_spider.blib.pyurllib import http_get_soup
 
 search_base_dir = "http://search.caixin.com/search/"
 
@@ -19,7 +19,7 @@ def query_urls(from_date, to_date, query_words):
     """
     link_mdl = search_base_dir + "search.jsp?startDate=%s&endDate=%s&keyword=%s&x=0&y=0"
     url = link_mdl % (from_date, to_date, query_words)
-    soup = get_soup(url)
+    soup = http_get_soup(url)
     info_urls = []
     while True:
         next_info = soup.find_all(name='a', attrs={'class', 'pageNavBtn2'})[0]
@@ -30,7 +30,7 @@ def query_urls(from_date, to_date, query_words):
         if next_info == "javascript:void();":
             break  # Last page
         else:
-            soup = get_soup(search_base_dir + next_info)
+            soup = http_get_soup(search_base_dir + next_info)
     return info_urls
 
 
@@ -40,7 +40,7 @@ def read_normal_article(url):
     使用样例：read_normal_article('http://international.caixin.com/2017-01-01/101032527.html')
     请勿直接使用这个函数
     """
-    soup = get_soup(url)
+    soup = http_get_soup(url)
     title = soup.title.get_text()
     ps = soup.find_all('p')
     text = ''
@@ -55,7 +55,7 @@ def read_blog(url):
     使用样例：read_blog('http://zhang-ming.blog.caixin.com/archives/157115')
     请勿直接使用这个函数
     """
-    soup = get_soup(url)
+    soup = http_get_soup(url)
     title = soup.title.get_text()
     blog_content = soup.find_all(name='div', attrs={'class', 'blog_content'})
     ps = blog_content[0].find_all('p')

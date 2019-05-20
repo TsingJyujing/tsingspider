@@ -8,7 +8,7 @@ Created on 2017-2-4
 
 import json
 
-from tsing_spider.blib.pyurllib import urlread2
+from tsing_spider.blib.pyurllib import http_get
 
 
 def get_movie_info(movie_id):
@@ -16,7 +16,7 @@ def get_movie_info(movie_id):
     :param movie_id: Index of Movie
     :return: json string
     """
-    return urlread2("https://api.douban.com/v2/movie/subject/%s" % movie_id)
+    return http_get("https://api.douban.com/v2/movie/subject/%s" % movie_id)
 
 
 def get_movie_json(movie_id):
@@ -32,7 +32,7 @@ def get_book_info(book_id):
     :param book_id: Index of book
     :return: json string
     """
-    return urlread2("https://api.douban.com/v2/book/%s" % book_id)
+    return http_get("https://api.douban.com/v2/book/%s" % book_id)
 
 
 def get_book_json(book_id):

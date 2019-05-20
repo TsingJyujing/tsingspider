@@ -7,48 +7,8 @@ Created on 2019-03-29
 
 import re
 import datetime
-import requests
-import traceback
 
-from multiprocessing import Pool
-
-import pymongo
-from bs4 import BeautifulSoup
-
-
-class LazyContent:
-    """
-    懒加载的GET请求
-    """
-
-    def __init__(self, url: str):
-        self._url = url
-        self.__data = None
-
-    @property
-    def content(self):
-        """
-        正文
-        :return:
-        """
-        if self.__data is None:
-            # todo Use proxy/simulated headers
-            self.__data = requests.get(self._url).content
-        return self.__data
-
-
-class LazySoup(LazyContent):
-    """
-    懒加载的Soup
-    """
-
-    def __init__(self, url: str, parser: str = "html.parser"):
-        self.__parser = parser
-        LazyContent.__init__(self, url)
-
-    @property
-    def soup(self):
-        return BeautifulSoup(self.content, self.__parser)
+from tsing_spider.blib.pyurllib import LazySoup
 
 
 class ForumThread(LazySoup):
@@ -120,7 +80,7 @@ class ForumThread(LazySoup):
             "author": self.author,
             "zone": self.zone,
             "title": self.title,
-            "last_edit": self.last_edit_time
+            "last_edit": str(self.last_edit_time)
         }
 
 
@@ -213,7 +173,7 @@ class ForumGroup(LazySoup):
                 a.get("href") is not None and a.get("href").startswith("forum-") and a.get("href").endswith("-1.html")]
 
 
-def get_fids():
+def __fids():
     # 散碎的FID
     fid = [110, 436, 437, 438, 34, 440, 32, 444, 415, 447, 448, 449, 450]
     for gid in [739, 696, 740]:
@@ -221,26 +181,3 @@ def get_fids():
             fid.append(f)
     return set(fid)
 
-
-def download_data_into_mongo(url):
-    with pymongo.MongoClient() as conn:
-        thread = ForumThread(url)
-        max_fail_count = 5
-        fail_count = 0
-        for i in range(max_fail_count):
-            fail_count += 1
-            try:
-                coll = conn.get_database("spider").get_collection("sex8cc")
-                if coll.count({"_id": url}) <= 0:
-                    print("Downloading:" + url)
-                    coll.insert_one(thread.create_document())
-                    return True
-            except:
-                if fail_count == max_fail_count:
-                    print("Error while downloading url:" + url)
-                    print(traceback.format_exc())
-                    return False
-
-
-if __name__ == "__main__":
-    print("G")

@@ -18,7 +18,7 @@ from bs4 import BeautifulSoup
 from tsing_spider.config import REQUEST_TIMEOUT, USER_AGENT, XML_DECODER
 
 
-def urlread2(url: str, retry_times: int = 10):
+def http_get(url: str, retry_times: int = 10):
     """
     Get raw data by URL
     :param url:
@@ -42,8 +42,8 @@ def urlread2(url: str, retry_times: int = 10):
     raise Exception("Error while reading:" + url)
 
 
-def get_soup(url: str, retry_times: int = 10, xml_decoder: str = XML_DECODER):
-    return BeautifulSoup(urlread2(url, retry_times), xml_decoder)  # html.parser
+def http_get_soup(url: str, retry_times: int = 10, xml_decoder: str = XML_DECODER):
+    return BeautifulSoup(http_get(url, retry_times), xml_decoder)  # html.parser
 
 
 def __download_callback(block_download_count: int, block_size: int, file_size: int, display_name: str = "FILE"):
@@ -72,7 +72,7 @@ class LiteFileDownloader(threading.Thread):
 
     def run(self):
         if not os.path.exists(self.filename):  # 已经下载过了
-            data = urlread2(url=self.image_url)
+            data = http_get(url=self.image_url)
             if data is not None:
                 with open(self.filename, 'wb') as fid:
                     fid.write(data)
@@ -90,7 +90,7 @@ class LiteDataDownloader(threading.Thread):
         self.tag = tag
 
     def run(self):
-        self.data = urlread2(url=self.image_url)
+        self.data = http_get(url=self.image_url)
 
     def write_file(self, filename):
         if self.data is not None:
@@ -114,3 +114,37 @@ class DownloadTask(threading.Thread):
             url=self.url,
             filename=self.dst,
             reporthook=lambda a, b, c: __download_callback(a, b, c, "%s-->%s" % (self.url, self.dst)))
+
+
+class LazyContent:
+    """
+    懒加载的GET请求
+    """
+
+    def __init__(self, url: str):
+        self._url = url
+        self.__data = None
+
+    @property
+    def content(self):
+        """
+        正文
+        :return:
+        """
+        if self.__data is None:
+            self.__data = requests.get(self._url).content
+        return self.__data
+
+
+class LazySoup(LazyContent):
+    """
+    懒加载的Soup
+    """
+
+    def __init__(self, url: str, parser: str = "html.parser"):
+        self.__parser = parser
+        LazyContent.__init__(self, url)
+
+    @property
+    def soup(self):
+        return BeautifulSoup(self.content, self.__parser)
