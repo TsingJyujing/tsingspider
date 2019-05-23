@@ -114,7 +114,7 @@ class ForumPage(LazySoup):
     @property
     def thread_list_url(self):
         # 获取非置顶帖子列表
-        return ["http://{}/{}".format(self.base_host, tb.find("a").get("href")) for tb in self.soup.find(
+        return ["https://{}/{}".format(self.base_host, tb.find("a").get("href")) for tb in self.soup.find(
             "table",
             attrs={"id": "threadlisttableid"}
         ).find_all(
@@ -165,7 +165,7 @@ class ForumGroup(LazySoup):
     """
 
     def __init__(self, gid: int):
-        super().__init__("http://sex8.cc/forum.php?gid=%d" % gid)
+        super().__init__("https://sex8.cc/forum.php?gid=%d" % gid)
 
     @property
     def forums_ids(self):
