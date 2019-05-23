@@ -147,4 +147,6 @@ class LazySoup(LazyContent):
 
     @property
     def soup(self):
-        return BeautifulSoup(self.content, self.__parser)
+        if self.__soup is None:
+            self.__soup = BeautifulSoup(self.content, self.__parser)
+        return self.__soup
