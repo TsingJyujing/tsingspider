@@ -143,6 +143,7 @@ class LazySoup(LazyContent):
 
     def __init__(self, url: str, parser: str = "html.parser"):
         self.__parser = parser
+        self.__soup = None
         LazyContent.__init__(self, url)
 
     @property
