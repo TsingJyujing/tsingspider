@@ -96,7 +96,7 @@ class ForumPage(LazySoup):
         LazySoup.__init__(self, self.url)
 
     @property
-    def url(self, protocol: str = "http") -> str:
+    def url(self, protocol: str = "https") -> str:
         return "{}://{}/forum-{}-{}.html".format(
             protocol,
             self.base_host,
@@ -114,12 +114,13 @@ class ForumPage(LazySoup):
     @property
     def thread_list_url(self):
         # 获取非置顶帖子列表
-        return ["https://{}/{}".format(self.base_host, tb.find("a").get("href")) for tb in self.soup.find(
-            "table",
-            attrs={"id": "threadlisttableid"}
-        ).find_all(
-            "tbody"
-        ) if tb.get("id") is not None and tb.get("id").startswith("normal")]
+        return [re.sub("-\d+-\d+\.html","-1-1.html", url) for url in (
+            "https://{}/{}".format(self.base_host, tb.find("a").get("href")) for tb in self.soup.find(
+                "table",
+                attrs={"id": "threadlisttableid"}
+            ).find_all(
+                "tbody"
+            ) if tb.get("id") is not None and tb.get("id").startswith("normal"))]
 
     @property
     def thread_list(self):
@@ -180,4 +181,3 @@ def __fids():
         for f in ForumGroup(gid).forums_ids:
             fid.append(f)
     return set(fid)
-
