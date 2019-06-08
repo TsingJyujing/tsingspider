@@ -77,7 +77,7 @@ class Sex8ccTest(unittest.TestCase):
         print(f.get_page_count())
 
     def test_forum_page_thread(self):
-        f = sex8cc.ForumPage(110,3)
+        f = sex8cc.ForumPage(157,1)
         print(f.thread_list_url)
         th = sex8cc.ForumThread(f.thread_list_url[0])
         print("PageInfo:\n" + json.dumps(th.create_document(),indent=2))

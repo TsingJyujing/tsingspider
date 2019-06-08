@@ -6,7 +6,6 @@ Created on 2019-03-29
 """
 
 import re
-import datetime
 
 from tsing_spider.blib.pyurllib import LazySoup
 
@@ -26,10 +25,10 @@ class ForumThread(LazySoup):
     @property
     def zone(self):
         title_block = self.soup.find("h1", attrs={"class": "ts"})
-        if title_block.find("a") is None:
+        try:
             return re.findall("\\[.*?\\]", title_block.get_text())[0][1:-1]
-        else:
-            return title_block.find("a").get_text().replace("[", "").replace("]", "")
+        except:
+            return ""
 
     @property
     def author(self):
@@ -39,12 +38,6 @@ class ForumThread(LazySoup):
             "name": author_block.get_text(),
             "url": author_block.get("href")
         }
-
-    @property
-    def last_edit_time(self):
-        time_str = re.findall(
-            "201[\\d\\-\\s\\:]+\d", self.soup.find("i", attrs={"class": "pstatus"}).get_text())[0]
-        return datetime.datetime.strptime(time_str, "%Y-%m-%d %H:%M")
 
     @property
     def _content_info(self):
@@ -79,8 +72,7 @@ class ForumThread(LazySoup):
             "images": self.image_list,
             "author": self.author,
             "zone": self.zone,
-            "title": self.title,
-            "last_edit": str(self.last_edit_time)
+            "title": self.title
         }
 
 
@@ -113,14 +105,14 @@ class ForumPage(LazySoup):
 
     @property
     def thread_list_url(self):
+        tb_list = [tb for tb in self.soup.find_all("tbody") if
+                   type(tb.get("id")) is str \
+                   and tb.get("id").startswith("normalthread_") \
+                   and tb.find("a", attrs={"class": "s xst"}).get("style") is None]
         # 获取非置顶帖子列表
-        return [re.sub("-\d+-\d+\.html","-1-1.html", url) for url in (
-            "https://{}/{}".format(self.base_host, tb.find("a").get("href")) for tb in self.soup.find(
-                "table",
-                attrs={"id": "threadlisttableid"}
-            ).find_all(
-                "tbody"
-            ) if tb.get("id") is not None and tb.get("id").startswith("normal"))]
+        return [re.sub("-\d+-\d+\.html", "-1-1.html", url) for url in (
+            "https://{}/{}".format(self.base_host, tb.find("a", attrs={"class": "s xst"}).get("href")) for tb in tb_list
+        )]
 
     @property
     def thread_list(self):
