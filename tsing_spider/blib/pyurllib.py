@@ -11,7 +11,9 @@ import re
 import sqlite3
 import threading
 from http.cookiejar import Cookie, CookieJar
+from typing import Optional
 from urllib.request import urlretrieve
+from warnings import warn
 
 import requests
 from bs4 import BeautifulSoup
@@ -21,7 +23,7 @@ from tsing_spider.config import REQUEST_TIMEOUT, USER_AGENT, XML_DECODER, cookie
 
 def _init_cookies(cookie_jar: CookieJar, firefox_cookies_path: str):
     """
-    Initialize cookies
+    Initialize cookies from firefox
     :param cookie_jar:
     :param firefox_cookies_path:
     :return:
@@ -50,9 +52,22 @@ def _init_cookies(cookie_jar: CookieJar, firefox_cookies_path: str):
     return cookie_jar
 
 
+def set_cookies(firefox_cookies_path: Optional[str] = None):
+    """
+    显式设置Cookies
+    :param firefox_cookies_path:
+    :return:
+    """
+    if firefox_cookies_path is None:
+        firefox_cookies_path = cookies_path
+    requests_session.cookies = _init_cookies(CookieJar(), firefox_cookies_path)
+
+
 requests_session = requests.Session()
-cookies_jar = _init_cookies(CookieJar(), cookies_path)
-requests_session.cookies = cookies_jar
+try:
+    set_cookies()
+except:
+    warn("Error while loading firefox cookies from: {}, please check it.".format(cookies_path))
 
 
 def http_get(url: str, retry_times: int = 10):
@@ -65,7 +80,7 @@ def http_get(url: str, retry_times: int = 10):
     for i in range(retry_times):
         try:
             host = re.findall('://.*?/', url, re.DOTALL)[0][3:-1]
-            request_info = requests.get(
+            request_info = requests_session.get(
                 url,
                 timeout=REQUEST_TIMEOUT,
                 headers={
@@ -74,7 +89,6 @@ def http_get(url: str, retry_times: int = 10):
                     'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
                     'Host': host,
                 },
-                cookies=cookies_jar,
             )
             return request_info.content
         except:
