@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from tsing_spider.bdata.porn import xvideos, xhamster, caoliu,sex8cc
+from tsing_spider.bdata.porn import xvideos, xhamster, caoliu, sex8cc
 from tsing_spider.blib.pyurllib import http_get_soup
 
 
@@ -24,7 +24,8 @@ class XhamsterTest(unittest.TestCase):
         print(xhamster.get_duration(self.data))
 
     def test_get_preview_images(self):
-        print(xhamster.get_preview_images(self.data))
+        with self.assertRaises(NotImplementedError):
+            xhamster.get_preview_images(self.data)
 
     def test_get_rating(self):
         print(xhamster.get_rating(self.data))
@@ -77,10 +78,11 @@ class Sex8ccTest(unittest.TestCase):
         print(f.get_page_count())
 
     def test_forum_page_thread(self):
-        f = sex8cc.ForumPage(157,1)
+        f = sex8cc.ForumPage(157, 1)
         print(f.thread_list_url)
         th = sex8cc.ForumThread(f.thread_list_url[0])
-        print("PageInfo:\n" + json.dumps(th.create_document(),indent=2))
+        print("PageInfo:\n" + json.dumps(th.create_document(), indent=2))
+
 
 if __name__ == '__main__':
     unittest.main()

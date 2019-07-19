@@ -26,9 +26,7 @@ def get_duration(sp):
 
 
 def get_preview_images(sp):
-    res = sp.find('div', attrs={"class": "screenshots_block clearfix", "id": "screenshots_block"})
-    res = res.find_all('img')
-    return [r.get('src') for r in res]
+    raise NotImplementedError("Not support yet")
 
 
 def get_download_link(sp):

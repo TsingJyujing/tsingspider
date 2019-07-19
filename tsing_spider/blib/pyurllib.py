@@ -6,16 +6,53 @@ Created on 2017-2-3
 
 处理超链接以及超链接获取的BeautifulSoup类
 """
-
 import os
 import re
+import sqlite3
 import threading
+from http.cookiejar import Cookie, CookieJar
 from urllib.request import urlretrieve
 
 import requests
 from bs4 import BeautifulSoup
 
-from tsing_spider.config import REQUEST_TIMEOUT, USER_AGENT, XML_DECODER
+from tsing_spider.config import REQUEST_TIMEOUT, USER_AGENT, XML_DECODER, cookies_path
+
+
+def _init_cookies(cookie_jar: CookieJar, firefox_cookies_path: str):
+    """
+    Initialize cookies
+    :param cookie_jar:
+    :param firefox_cookies_path:
+    :return:
+    """
+    con = sqlite3.connect(firefox_cookies_path)
+    cur = con.cursor()
+    cur.execute("SELECT host, path, isSecure, expiry, name, value FROM moz_cookies")
+    for item in cur.fetchall():
+        c = Cookie(
+            0,
+            item[4],
+            item[5],
+            None,
+            False,
+            item[0],
+            item[0].startswith('.'),
+            item[0].startswith('.'),
+            item[1],
+            False,
+            item[2],
+            item[3],
+            item[3] == "",
+            None, None, {}
+        )
+        cookie_jar.set_cookie(c)
+    return cookie_jar
+
+
+requests_session = requests.Session()
+cookies_jar = _init_cookies(CookieJar(), cookies_path)
+requests_session.cookies = cookies_jar
 
 
 def http_get(url: str, retry_times: int = 10):
@@ -27,16 +64,19 @@ def http_get(url: str, retry_times: int = 10):
     """
     for i in range(retry_times):
         try:
-            return requests.get(
+            host = re.findall('://.*?/', url, re.DOTALL)[0][3:-1]
+            request_info = requests.get(
                 url,
                 timeout=REQUEST_TIMEOUT,
                 headers={
                     'User-Agent': USER_AGENT,
-                    'Accept': '"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"',
-                    'Accept-Language': 'zh-CN,zh;q=0.8,en-US;q=0.5,en;q=0.3',
-                    'Host': re.findall('://.*?/', url, re.DOTALL)[0][3:-1]
-                }
-            ).content
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                    'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
+                    'Host': host,
+                },
+                cookies=cookies_jar,
+            )
+            return request_info.content
         except:
             pass
     raise Exception("Error while reading:" + url)
@@ -132,7 +172,7 @@ class LazyContent:
         :return:
         """
         if self.__data is None:
-            self.__data = requests.get(self._url).content
+            self.__data = http_get(self._url)
         return self.__data
 
 
