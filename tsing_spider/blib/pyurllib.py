@@ -77,6 +77,7 @@ def http_get(url: str, retry_times: int = 10):
     :param retry_times:
     :return:
     """
+    exception_info = None
     for i in range(retry_times):
         try:
             host = re.findall('://.*?/', url, re.DOTALL)[0][3:-1]
@@ -89,11 +90,13 @@ def http_get(url: str, retry_times: int = 10):
                     'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
                     'Host': host,
                 },
+                verify=False
             )
             return request_info.content
-        except:
-            pass
-    raise Exception("Error while reading:" + url)
+        except Exception as ex:
+            exception_info = ex
+    # raise Exception("Error while reading:" + url)
+    raise exception_info
 
 
 def http_get_soup(url: str, retry_times: int = 10, xml_decoder: str = XML_DECODER):

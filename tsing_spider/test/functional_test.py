@@ -2,7 +2,7 @@ import json
 import unittest
 
 from tsing_spider.bdata.porn import xvideos, xhamster, caoliu, sex8cc
-from tsing_spider.blib.pyurllib import http_get_soup
+from tsing_spider.blib.pyurllib import http_get_soup, http_get
 
 
 class XhamsterTest(unittest.TestCase):
@@ -82,6 +82,8 @@ class Sex8ccTest(unittest.TestCase):
         print(f.thread_list_url)
         th = sex8cc.ForumThread(f.thread_list_url[0])
         print("PageInfo:\n" + json.dumps(th.create_document(), indent=2))
+        for i, url in enumerate(th.image_list):
+            http_get(url)
 
 
 if __name__ == '__main__':
