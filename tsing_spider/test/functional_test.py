@@ -1,7 +1,8 @@
 import json
 import unittest
 
-from tsing_spider.bdata.porn import xvideos, xhamster, caoliu, sex8cc
+from tsing_spider.bdata.porn import xhamster, caoliu, sex8cc
+from tsing_spider.bdata.porn.xvideos import XVideoNew, XVideoInfo
 from tsing_spider.blib.pyurllib import http_get_soup, http_get
 
 
@@ -35,18 +36,22 @@ class XhamsterTest(unittest.TestCase):
 
 
 class XvideosTest(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls) -> None:
-        cls.data = http_get_soup("https://www.xvideos.com/video47916065/_~_~_2")
 
-    def test_get_title(self):
-        print(xvideos.get_title(self.data))
+    def test_index_page(self):
+        index_page = XVideoNew(10)
+        print(index_page.video_id_list)
 
-    def test_get_categories(self):
-        print(xvideos.get_categories(self.data))
-
-    def test_get_download_link(self):
-        print(xvideos.get_download_link(self.data))
+    def test_detail_page(self):
+        page = XVideoInfo(video_id=50043631)
+        print("PageInfo:\n" + json.dumps({
+            "title": page.title,
+            "video_link": page.video_link,
+            "preview_images": page.preview_images,
+            "categories": page.categories,
+            "id": page.video_id,
+            "uri": page.relative_uri,
+            "url": page.url
+        }, indent=2))
 
 
 class CaoliuTest(unittest.TestCase):
