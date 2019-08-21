@@ -21,9 +21,7 @@ XML_DECODER = 'lxml'
 DEBUG_PRINT = True
 caoliu_host = "t66y.com"
 
-cookies_path = os.path.expanduser(
-    "~/Library/Application Support/Firefox/Profiles/kqatl2m8.default-release/cookies.sqlite"
-)
+cookies_path = None
 
 
 def debug_print(*args, **kwargs):

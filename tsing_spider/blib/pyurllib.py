@@ -65,7 +65,10 @@ def set_cookies(firefox_cookies_path: Optional[str] = None):
 
 requests_session = requests.Session()
 try:
-    set_cookies()
+    if cookies_path:
+        set_cookies()
+    else:
+        warn("Firefox cookies file isn't set.")
 except:
     warn("Error while loading firefox cookies from: {}, please check it.".format(cookies_path))
 
