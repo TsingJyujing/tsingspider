@@ -12,7 +12,7 @@ from urllib.parse import urljoin
 from tsing_spider.blib.pyurllib import LazySoup
 
 
-class XVideoNew(LazySoup):
+class XVideoIndexPage(LazySoup):
     def __init__(self, index: int, base_host: str = "www.xvideos.com"):
         assert 0 <= index <= 19999, "index out of range"
         self._new_index = index
@@ -44,7 +44,7 @@ class XVideoNew(LazySoup):
         return self._url
 
 
-class XVideoInfo(LazySoup):
+class XVideosVideoPage(LazySoup):
     def __init__(self, relative_uri: str = None, video_id: int = None, base_host: str = "www.xvideos.com"):
         if relative_uri is None and video_id is None:
             raise Exception("relative_uri or video_id at least input one!")

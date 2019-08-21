@@ -2,7 +2,7 @@ import json
 import unittest
 
 from tsing_spider.bdata.porn import xhamster, caoliu, sex8cc
-from tsing_spider.bdata.porn.xvideos import XVideoNew, XVideoInfo
+from tsing_spider.bdata.porn.xvideos import XVideoIndexPage, XVideosVideoPage
 from tsing_spider.blib.pyurllib import http_get_soup, http_get
 
 
@@ -38,11 +38,11 @@ class XhamsterTest(unittest.TestCase):
 class XvideosTest(unittest.TestCase):
 
     def test_index_page(self):
-        index_page = XVideoNew(10)
+        index_page = XVideoIndexPage(10)
         print(index_page.video_id_list)
 
-    def test_detail_page(self):
-        page = XVideoInfo(video_id=50043631)
+    def test_video_page(self):
+        page = XVideosVideoPage(video_id=50043631)
         print("PageInfo:\n" + json.dumps({
             "title": page.title,
             "video_link": page.video_link,
