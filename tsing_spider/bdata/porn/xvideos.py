@@ -55,16 +55,36 @@ class XVideosVideoPage(LazySoup):
             self.video_id = relative_uri.strip("/").split("/")[0]
             self.relative_uri = relative_uri
         self._title: Optional[str] = None
+        self._duration: Optional[int] = None
+        self._size: Optional[dict] = None
         self._categories: Optional[List[str]] = None
         self._video_link: Optional[str] = None
         self._preview_images: Optional[List[str]] = None
         LazySoup.__init__(self, urljoin("https://" + base_host, self.relative_uri))
 
+    def get_meta(self, meta_property: str):
+        return self.soup.find("meta", attrs={"property": meta_property})['content']
+
     @property
     def title(self):
         if self._title is None:
-            self._title = self.soup.find("meta", attrs={"property": "og:title"})['content']
+            self._title = self.get_meta("og:title")
         return self._title
+
+    @property
+    def duration(self):
+        if self._duration is None:
+            self._duration = int(self.get_meta("og:duration"))
+        return self._duration
+
+    @property
+    def size(self):
+        if self._size is None:
+            self._size = {
+                "width": int(self.get_meta("og:video:width")),
+                "height": int(self.get_meta("og:video:height")),
+            }
+        return self._size
 
     @property
     def categories(self):

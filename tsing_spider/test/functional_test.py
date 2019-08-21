@@ -50,7 +50,9 @@ class XvideosTest(unittest.TestCase):
             "categories": page.categories,
             "id": page.video_id,
             "uri": page.relative_uri,
-            "url": page.url
+            "url": page.url,
+            "size": page.size,
+            "duration": page.duration
         }, indent=2))
 
 
