@@ -38,8 +38,8 @@ class XhamsterTest(unittest.TestCase):
 class XvideosTest(unittest.TestCase):
 
     def test_index_page(self):
-        index_page = XVideoIndexPage(10)
-        print(index_page.video_id_list)
+        print(XVideoIndexPage(0).video_id_list)
+        print(XVideoIndexPage(10).video_id_list)
 
     def test_video_page(self):
         page = XVideosVideoPage(video_id=50043631)

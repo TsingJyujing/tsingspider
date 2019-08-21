@@ -16,7 +16,7 @@ class XVideoIndexPage(LazySoup):
     def __init__(self, index: int, base_host: str = "www.xvideos.com"):
         assert 0 <= index <= 19999, "index out of range"
         self._new_index = index
-        base = "https://" + base_host
+        base = "https://{}/".format(base_host)
         if index == 0:
             url = base
         else:
