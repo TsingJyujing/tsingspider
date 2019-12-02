@@ -25,7 +25,7 @@ def get_page_images(page_soup):
     return [obj.get("data-src") for obj in page_soup.find(
         name="div", attrs={"class": "tpc_content do_not_catch"}
     ).find_all(
-        name="input", attrs={"type": "image"}
+        "img"
     )]
 
 

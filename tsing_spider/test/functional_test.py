@@ -71,7 +71,9 @@ class CaoliuTest(unittest.TestCase):
         print(caoliu.get_page_text(self.data))
 
     def test_get_images(self):
-        print(caoliu.get_page_images(self.data))
+        image_list = caoliu.get_page_images(self.data)
+        assert len(image_list) > 0, "No images"
+        print(image_list)
 
 
 class Sex8ccTest(unittest.TestCase):
