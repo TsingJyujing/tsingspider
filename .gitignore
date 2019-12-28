@@ -190,4 +190,4 @@ fabric.properties
 
 # Editor-based Rest Client
 .idea/
-
+/debug.py
