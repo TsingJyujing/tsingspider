@@ -6,15 +6,14 @@ Created on 2019-03-29
 """
 
 import re
-
+import traceback
 from tsing_spider.blib.pyurllib import LazySoup
+import logging
+
+log = logging.getLogger(__file__)
 
 
-class ForumThread(LazySoup):
-    """
-    论坛的帖子
-    """
-
+class ForumThreadComment(LazySoup):
     def __init__(self, url: str):
         super().__init__(url)
 
@@ -23,12 +22,33 @@ class ForumThread(LazySoup):
         return self.soup.find("span", attrs={"id": "thread_subject"}).get_text()
 
     @property
+    def page_count(self):
+        return int(re.findall(
+            "\\d+",
+            self.soup.find(
+                "div",
+                attrs={"class": "pg"}
+            ).find(
+                "label"
+            ).find(
+                "span"
+            ).get(
+                "title"
+            ),
+            re.DOTALL
+        )[0])
+
+    @property
     def zone(self):
         title_block = self.soup.find("h1", attrs={"class": "ts"})
         try:
             return re.findall("\\[.*?\\]", title_block.get_text())[0][1:-1]
-        except:
-            return ""
+        except Exception as ex:
+            log.error("Error while get the zone of page {} caused by {}".format(
+                self._url,
+                traceback.format_exc()
+            ))
+            raise ex
 
     @property
     def author(self):
@@ -38,6 +58,15 @@ class ForumThread(LazySoup):
             "name": author_block.get_text(),
             "url": author_block.get("href")
         }
+
+
+class ForumThread(ForumThreadComment):
+    """
+    论坛的帖子
+    """
+
+    def __init__(self, url: str):
+        super().__init__(url)
 
     @property
     def _content_info(self):

@@ -7,6 +7,9 @@ Created on 2017-3-2
 import json
 
 from tsing_spider.blib import priority_get_from_dict
+import logging
+
+log = logging.getLogger(__file__)
 
 
 def get_title(sp):

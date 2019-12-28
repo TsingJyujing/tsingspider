@@ -10,6 +10,8 @@ from typing import List, Optional
 from urllib.parse import urljoin
 
 from tsing_spider.blib.pyurllib import LazySoup
+import logging
+log = logging.getLogger(__file__)
 
 
 class XVideoIndexPage(LazySoup):

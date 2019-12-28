@@ -7,6 +7,9 @@ Created on 2017-3-2
 
 from tsing_spider.blib.pyurllib import http_get_soup
 from tsing_spider.config import caoliu_host
+import logging
+
+log = logging.getLogger(__file__)
 
 
 def get_page_title(page_soup):
