@@ -6,71 +6,17 @@ Created on 2017-2-3
 
 处理超链接以及超链接获取的BeautifulSoup类
 """
+import logging
 import os
 import re
-import sqlite3
 import threading
-from http.cookiejar import Cookie, CookieJar
-from typing import Optional
 from urllib.request import urlretrieve
-from warnings import warn
 
-import requests
 from bs4 import BeautifulSoup
 
-from tsing_spider.config import REQUEST_TIMEOUT, USER_AGENT, XML_DECODER, cookies_path
+from tsing_spider.config import get_request_timeout, get_user_agent, get_xml_decoder, requests_session
 
-
-def _init_cookies(cookie_jar: CookieJar, firefox_cookies_path: str):
-    """
-    Initialize cookies from firefox
-    :param cookie_jar:
-    :param firefox_cookies_path:
-    :return:
-    """
-    con = sqlite3.connect(firefox_cookies_path)
-    cur = con.cursor()
-    cur.execute("SELECT host, path, isSecure, expiry, name, value FROM moz_cookies")
-    for item in cur.fetchall():
-        c = Cookie(
-            0,
-            item[4],
-            item[5],
-            None,
-            False,
-            item[0],
-            item[0].startswith('.'),
-            item[0].startswith('.'),
-            item[1],
-            False,
-            item[2],
-            item[3],
-            item[3] == "",
-            None, None, {}
-        )
-        cookie_jar.set_cookie(c)
-    return cookie_jar
-
-
-def set_cookies(firefox_cookies_path: Optional[str] = None):
-    """
-    显式设置Cookies
-    :param firefox_cookies_path:
-    :return:
-    """
-    if firefox_cookies_path is None:
-        firefox_cookies_path = cookies_path
-    requests_session.cookies = _init_cookies(CookieJar(), firefox_cookies_path)
-
-
-requests_session = requests.Session()
-try:
-    if cookies_path:
-        set_cookies()
-    else:
-        warn("Firefox cookies file isn't set.")
-except:
-    warn("Error while loading firefox cookies from: {}, please check it.".format(cookies_path))
+log = logging.getLogger(__file__)
 
 
 def http_get(url: str, retry_times: int = 10):
@@ -81,14 +27,15 @@ def http_get(url: str, retry_times: int = 10):
     :return:
     """
     exception_info = None
+    log.debug("Trying to get url: {}".format(url))
     for i in range(retry_times):
         try:
             host = re.findall('://.*?/', url, re.DOTALL)[0][3:-1]
             request_info = requests_session.get(
                 url,
-                timeout=REQUEST_TIMEOUT,
+                timeout=get_request_timeout(),
                 headers={
-                    'User-Agent': USER_AGENT,
+                    'User-Agent': get_user_agent(),
                     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                     'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
                     'Host': host,
@@ -97,13 +44,16 @@ def http_get(url: str, retry_times: int = 10):
             )
             return request_info.content
         except Exception as ex:
+            log.debug("Failed to get address {} while #{} time retrying caused by: {}".format(
+                url, i + 1, str(ex)
+            ))
             exception_info = ex
     # raise Exception("Error while reading:" + url)
     raise exception_info
 
 
-def http_get_soup(url: str, retry_times: int = 10, xml_decoder: str = XML_DECODER):
-    return BeautifulSoup(http_get(url, retry_times), xml_decoder)  # html.parser
+def http_get_soup(url: str, retry_times: int = 10):
+    return BeautifulSoup(http_get(url, retry_times), get_xml_decoder())  # html.parser
 
 
 def __download_callback(block_download_count: int, block_size: int, file_size: int, display_name: str = "FILE"):
@@ -194,6 +144,13 @@ class LazyContent:
         if self.__data is None:
             self.__data = http_get(self._url)
         return self.__data
+
+    def reset_content(self):
+        """
+        Reset content for load again
+        :return:
+        """
+        self.__data = None
 
 
 class LazySoup(LazyContent):

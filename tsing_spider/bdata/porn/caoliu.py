@@ -6,7 +6,7 @@ Created on 2017-3-2
 """
 
 from tsing_spider.blib.pyurllib import http_get_soup
-from tsing_spider.config import caoliu_host
+from tsing_spider.config import __CAOLIU_HOST
 import logging
 
 log = logging.getLogger(__file__)
@@ -48,7 +48,7 @@ def get_latest_urls(page_index):
     return_value = []
     for h3block in h3blocks:
         try:
-            url = "https://%s/%s" % (caoliu_host, h3block.a.get("href"))
+            url = "https://%s/%s" % (__CAOLIU_HOST, h3block.a.get("href"))
             if h3block.a.get("href")[:8] != "htm_data":
                 raise Exception("Not a page url")
             if __get_font_color(h3block.a) in ("red", "blue"):
@@ -66,7 +66,7 @@ def __generate_index_page_url(page_index):
     :param page_index: 索引页面index
     :return: 索引页面的URL
     """
-    return "https://%s/thread0806.php?fid=16&search=&page=%d" % (caoliu_host, page_index)
+    return "https://%s/thread0806.php?fid=16&search=&page=%d" % (__CAOLIU_HOST, page_index)
 
 
 def __get_font_color(asoup):

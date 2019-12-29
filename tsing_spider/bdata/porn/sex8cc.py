@@ -14,6 +14,9 @@ log = logging.getLogger(__file__)
 
 
 class ForumThreadComment(LazySoup):
+    """
+    某个帖子的任意一页
+    """
     def __init__(self, url: str):
         super().__init__(url)
 
