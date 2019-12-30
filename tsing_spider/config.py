@@ -12,9 +12,10 @@ from typing import Optional
 from warnings import warn
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 
 # 响应超时
-
 __REQUEST_TIMEOUT = 25
 
 
@@ -72,6 +73,17 @@ def set_caoliu_host(value: str):
 
 __COOKIES_PATH = None
 requests_session = requests.Session()
+
+requests_session.mount(
+    "http",
+    HTTPAdapter(
+        max_retries=Retry(
+            total=5,
+            backoff_factor=0.1,
+            status_forcelist=[500, 502, 503, 504]
+        )
+    )
+)
 
 
 def _init_cookies(cookie_jar: CookieJar, firefox_cookies_path: str):
