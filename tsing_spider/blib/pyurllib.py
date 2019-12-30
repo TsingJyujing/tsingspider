@@ -19,41 +19,31 @@ from tsing_spider.config import get_request_timeout, get_user_agent, get_xml_dec
 log = logging.getLogger(__file__)
 
 
-def http_get(url: str, retry_times: int = 10):
+def http_get(url: str):
     """
     Get raw data by URL
     :param url:
-    :param retry_times:
     :return:
     """
-    exception_info = None
     log.debug("Trying to get url: {}".format(url))
-    for i in range(retry_times):
-        try:
-            host = re.findall('://.*?/', url, re.DOTALL)[0][3:-1]
-            request_info = requests_session.get(
-                url,
-                timeout=get_request_timeout(),
-                headers={
-                    'User-Agent': get_user_agent(),
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-                    'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
-                    'Host': host,
-                },
-                verify=False
-            )
-            return request_info.content
-        except Exception as ex:
-            log.debug("Failed to get address {} while #{} time retrying caused by: {}".format(
-                url, i + 1, str(ex)
-            ))
-            exception_info = ex
-    # raise Exception("Error while reading:" + url)
-    raise exception_info
+    host = re.findall('://.*?/', url, re.DOTALL)[0][3:-1]
+    response = requests_session.get(
+        url,
+        timeout=get_request_timeout(),
+        headers={
+            'User-Agent': get_user_agent(),
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
+            'Host': host,
+        },
+        verify=False,
+    )
+    response.raise_for_status()
+    return response.content
 
 
-def http_get_soup(url: str, retry_times: int = 10):
-    return BeautifulSoup(http_get(url, retry_times), get_xml_decoder())  # html.parser
+def http_get_soup(url: str):
+    return BeautifulSoup(http_get(url), get_xml_decoder())  # html.parser
 
 
 def __download_callback(block_download_count: int, block_size: int, file_size: int, display_name: str = "FILE"):
