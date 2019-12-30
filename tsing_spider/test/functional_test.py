@@ -1,49 +1,63 @@
 import json
+import logging
 import unittest
 
 from tsing_spider.bdata.porn import xhamster, caoliu, sex8cc
 from tsing_spider.bdata.porn.xvideos import XVideoIndexPage, XVideosVideoPage
 from tsing_spider.blib.pyurllib import http_get_soup, http_get
 
+logging.basicConfig(level=logging.DEBUG)
+log = logging.getLogger(__file__)
+
 
 class XhamsterTest(unittest.TestCase):
+    # fixme Process 301 redirection well
+    # fixme Fit new page layout
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.data = http_get_soup(
-            "https://m.xhamster.com/videos/hot-german-milf-female-teacher-show-how-to-fuck-private-11500990")
-        assert cls.data is not None, "Data download failed."
-        print("setUpClass successfully")
+        cls.test_obj = xhamster.XhamsterVideo(
+            "https://xhamster.com/videos/hot-german-milf-female-teacher-show-how-to-fuck-private-11500990"
+        )
 
-    def test_get_categories(self):
-        print(xhamster.get_categories(self.data))
+    def test_video_info(self):
+        log.info("Video Info: \n{}".format(
+            "\n".join(
+                "{}=[{}]".format(k, type(v)) for k, v in self.test_obj.video_info.items()
+            )
+        ))
 
-    def test_get_download_link(self):
-        print(xhamster.get_download_link(self.data))
+    def test_title(self):
+        log.info("Title={}".format(self.test_obj.title))
 
-    def test_get_duration(self):
-        print(xhamster.get_duration(self.data))
+    def test_categories(self):
+        log.info("Categories={}".format("\n".join(
+            "{}->{}".format(item["text"], item["link"])
+            for item in self.test_obj.categories
+        )))
 
-    def test_get_preview_images(self):
-        with self.assertRaises(NotImplementedError):
-            xhamster.get_preview_images(self.data)
+    def test_rating(self):
+        log.info("Rating={}".format(self.test_obj.rating))
 
-    def test_get_rating(self):
-        print(xhamster.get_rating(self.data))
+    def test_duration(self):
+        log.info("Duration={}".format(self.test_obj.duration))
 
-    def test_get_title(self):
-        print(xhamster.get_title(self.data))
+    def test_download_link(self):
+        log.info("Download Link={}".format(self.test_obj.download_link))
+
+    def test_preview_image(self):
+        log.info("Preview Image={}".format(self.test_obj.preview_image))
 
 
 class XvideosTest(unittest.TestCase):
 
     def test_index_page(self):
-        print(XVideoIndexPage(0).video_id_list)
-        print(XVideoIndexPage(10).video_id_list)
+        log.info(XVideoIndexPage(0).video_id_list)
+        log.info(XVideoIndexPage(10).video_id_list)
 
     def test_video_page(self):
-        page = XVideosVideoPage(video_id=50043631)
-        print("PageInfo:\n" + json.dumps({
+        page = XVideosVideoPage(video_id=XVideoIndexPage(0).video_id_list[0])
+        log.info("PageInfo:\n" + json.dumps({
             "title": page.title,
             "video_link": page.video_link,
             "preview_images": page.preview_images,
@@ -62,33 +76,37 @@ class CaoliuTest(unittest.TestCase):
         urls = caoliu.get_latest_urls(2)
         cls.data = http_get_soup(urls[0])
         assert cls.data is not None, "Data download failed."
-        print("setUpClass successfully")
+        log.info("setUpClass successfully")
 
     def test_get_title(self):
-        print(caoliu.get_page_title(self.data))
+        log.info(caoliu.get_page_title(self.data))
 
     def test_get_text(self):
-        print(caoliu.get_page_text(self.data))
+        log.info(caoliu.get_page_text(self.data))
 
     def test_get_images(self):
-        print(caoliu.get_page_images(self.data))
+        log.info(caoliu.get_page_images(self.data))
 
 
 class Sex8ccTest(unittest.TestCase):
 
     def test_forum_group(self):
         g = sex8cc.ForumGroup(739)
-        print(g.forums_ids)
+        log.info(g.forums_ids)
 
     def test_forum(self):
         f = sex8cc.Forum(110)
-        print(f.get_page_count())
+        log.info(f.get_page_count())
 
     def test_forum_page_thread(self):
         f = sex8cc.ForumPage(157, 1)
-        print(f.thread_list_url)
+        urls = f.thread_list_url
+        log.info("Get {} urls: \n{}".format(
+            len(urls),
+            "\n".join(urls)
+        ))
         th = sex8cc.ForumThread(f.thread_list_url[0])
-        print("PageInfo:\n" + json.dumps(th.create_document(), indent=2))
+        log.info("PageInfo:\n" + json.dumps(th.create_document(), indent=2))
         for i, url in enumerate(th.image_list):
             http_get(url)
 
