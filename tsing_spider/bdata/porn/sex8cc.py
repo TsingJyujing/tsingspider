@@ -5,18 +5,22 @@ Created on 2019-03-29
 @author: Yuan Yi fan
 """
 
+import logging
 import re
 import traceback
+
 from tsing_spider.blib.pyurllib import LazySoup
-import logging
 
 log = logging.getLogger(__file__)
 
+
+# fixme 重写获取所有评论的代码，使用页面LRU缓存
 
 class ForumThreadComment(LazySoup):
     """
     某个帖子的任意一页
     """
+
     def __init__(self, url: str):
         super().__init__(url)
 
@@ -46,6 +50,9 @@ class ForumThreadComment(LazySoup):
         title_block = self.soup.find("h1", attrs={"class": "ts"})
         try:
             return re.findall("\\[.*?\\]", title_block.get_text())[0][1:-1]
+        except IndexError as _:
+            log.info("Can't find zone info from page {}".format(self._url))
+            return None
         except Exception as ex:
             log.error("Error while get the zone of page {} caused by {}".format(
                 self._url,

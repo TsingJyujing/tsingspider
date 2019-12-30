@@ -5,12 +5,13 @@ Created on 2017-3-2
 @author: Yuan Yi fan
 """
 
+import logging
 import re
-from typing import List, Optional
+from typing import List, Optional, Union
 from urllib.parse import urljoin
 
 from tsing_spider.blib.pyurllib import LazySoup
-import logging
+
 log = logging.getLogger(__file__)
 
 
@@ -27,7 +28,7 @@ class XVideoIndexPage(LazySoup):
         LazySoup.__init__(self, url)
 
     @property
-    def video_id_list(self):
+    def video_id_list(self) -> List[str]:
         if self._video_id_list is None:
             self._video_id_list = [
                 s["data-id"]
@@ -47,7 +48,7 @@ class XVideoIndexPage(LazySoup):
 
 
 class XVideosVideoPage(LazySoup):
-    def __init__(self, relative_uri: str = None, video_id: int = None, base_host: str = "www.xvideos.com"):
+    def __init__(self, relative_uri: str = None, video_id: Union[int, str] = None, base_host: str = "www.xvideos.com"):
         if relative_uri is None and video_id is None:
             raise Exception("relative_uri or video_id at least input one!")
         if video_id is not None:
