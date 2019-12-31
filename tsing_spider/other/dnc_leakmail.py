@@ -4,7 +4,7 @@ Created on 2017-2-4
 @author: Yuan Yi fan
 """
 
-from tsing_spider.blib.pyurllib import http_get
+from tsing_spider.util import http_get
 
 
 def get_mail_data(id):

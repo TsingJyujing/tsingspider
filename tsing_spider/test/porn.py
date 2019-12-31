@@ -2,17 +2,15 @@ import json
 import logging
 import unittest
 
-from tsing_spider.bdata.porn import xhamster, caoliu, sex8cc
-from tsing_spider.bdata.porn.xvideos import XVideoIndexPage, XVideosVideoPage
-from tsing_spider.blib.pyurllib import http_get_soup, http_get
+from tsing_spider.porn import xhamster, sex8cc, caoliu
+from tsing_spider.porn.xvideos import XVideoIndexPage, XVideosVideoPage
+from tsing_spider.util import http_get_soup, http_get
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__file__)
 
 
 class XhamsterTest(unittest.TestCase):
-    # fixme Process 301 redirection well
-    # fixme Fit new page layout
 
     @classmethod
     def setUpClass(cls) -> None:

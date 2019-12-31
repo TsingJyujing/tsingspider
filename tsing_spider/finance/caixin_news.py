@@ -6,7 +6,7 @@ Created on 2017-2-4
 """
 import re
 
-from tsing_spider.blib.pyurllib import http_get_soup
+from tsing_spider.util import http_get_soup
 
 search_base_dir = "http://search.caixin.com/search/"
 

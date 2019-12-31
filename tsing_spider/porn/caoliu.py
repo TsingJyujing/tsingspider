@@ -5,7 +5,7 @@ Created on 2017-3-2
 @author: Yuan Yi fan
 """
 
-from tsing_spider.blib.pyurllib import http_get_soup
+from tsing_spider.util import http_get_soup
 from tsing_spider.config import __CAOLIU_HOST
 import logging
 

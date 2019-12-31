@@ -8,8 +8,8 @@ import json
 import logging
 import re
 
-from tsing_spider.blib import priority_get_from_dict
-from tsing_spider.blib.pyurllib import LazySoup
+from tsing_spider.util import priority_get_from_dict
+from tsing_spider.util import LazySoup
 
 log = logging.getLogger(__file__)
 

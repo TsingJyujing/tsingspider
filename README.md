@@ -22,7 +22,7 @@ pip3 install -e git+https://github.com/TsingJyujing/DataSpider.git#egg=TsingSpid
 财新网爬虫与其说是爬虫，不如说是一个<搜索-下载>系统。
 首先要获取所有的文章链接，请使用这个接口：
 ```python
-from tsing_spider.bdata.finance.caixin_news import query_urls
+from tsing_spider.finance.caixin_news import query_urls
 query_urls(from_date, to_date, query_words)
 ```
 该函数的作用是搜索所有的含有query_words的文章超链接，其中：
@@ -39,7 +39,7 @@ query_urls('2016-09-01', '2016-09-30', '英镑')
 目前仅仅支持书籍和电影。
 API格式如下(以获取书籍的JSON结构体为例)：
 ```python
-from tsing_spider.bdata.social_network.douban import get_book_json
+from tsing_spider.social_network import get_book_json
 get_book_json(ID)
 ```
 请直接查看文件的注释，函数命名的格式是：
