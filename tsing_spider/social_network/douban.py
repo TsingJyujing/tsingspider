@@ -8,7 +8,7 @@ Created on 2017-2-4
 
 import json
 
-from tsing_spider.blib.pyurllib import http_get
+from tsing_spider.util import http_get
 
 
 def get_movie_info(movie_id):

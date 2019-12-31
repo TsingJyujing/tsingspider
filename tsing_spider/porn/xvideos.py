@@ -10,7 +10,7 @@ import re
 from typing import List, Optional, Union
 from urllib.parse import urljoin
 
-from tsing_spider.blib.pyurllib import LazySoup
+from tsing_spider.util import LazySoup
 
 log = logging.getLogger(__file__)
 

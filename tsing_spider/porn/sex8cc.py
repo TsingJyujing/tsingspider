@@ -8,17 +8,49 @@ Created on 2019-03-29
 import logging
 import re
 import traceback
+from functools import lru_cache
 
-from tsing_spider.blib.pyurllib import LazySoup
+from tsing_spider.util import LazySoup, process_html_string
 
 log = logging.getLogger(__file__)
+
+
+class User:
+
+    def __init__(self, name: str, uid: int):
+        self.uid = uid
+        self.name = name
+
+    @property
+    def doc(self):
+        return dict(
+            name=self.name,
+            uid=self.uid,
+        )
+
+    @staticmethod
+    def extract_uid(url: str) -> int:
+        res = re.findall(r"space-uid-(\d+).html", url)
+        if len(res) > 0:
+            return int(res[0])
+        res = re.findall(r"uid=(\d+)", url)
+        if len(res) > 0:
+            return int(res[0])
+        raise Exception("Can't find uid in string: {}".format(url))
+
+    @staticmethod
+    def extract_user(a_tag):
+        return User(
+            name=process_html_string(a_tag.get_text()),
+            uid=User.extract_uid(a_tag.get("href"))
+        )
 
 
 # fixme 重写获取所有评论的代码，使用页面LRU缓存
 
 class ForumThreadComment(LazySoup):
     """
-    某个帖子的任意一页
+    论坛的帖子的任意一页
     """
 
     def __init__(self, url: str):
@@ -26,15 +58,18 @@ class ForumThreadComment(LazySoup):
 
     @property
     def title(self):
-        return self.soup.find("span", attrs={"id": "thread_subject"}).get_text()
+        return self.soup.find("span", attrs={"id": "thread_subject"}).get_text().strip(" \n")
 
     @property
     def page_count(self):
+        """
+        获取总页数
+        :return:
+        """
         return int(re.findall(
-            "\\d+",
+            r"\d+",
             self.soup.find(
-                "div",
-                attrs={"class": "pg"}
+                "div", attrs={"class": "pg"}
             ).find(
                 "label"
             ).find(
@@ -44,6 +79,51 @@ class ForumThreadComment(LazySoup):
             ),
             re.DOTALL
         )[0])
+
+    @property
+    def _poster_list(self):
+        return self.soup.find("div", attrs={"id": "postlist", "class": "pl bm"})
+
+
+class ForumThread(ForumThreadComment):
+    """
+    论坛的帖子的第一页
+    """
+
+    def __init__(self, url: str):
+        super().__init__(self._get_sub_page_url(url, 1))
+
+    @staticmethod
+    def _get_sub_page_url(url: str, page_index: int):
+        return re.sub(r"-(\d+)-\d+.html", "-{}-1.html".format(page_index), url)
+
+    @lru_cache(maxsize=256)
+    def _get_page(self, page_index: int):
+        url = self._get_sub_page_url(self._url, page_index)
+        return ForumThreadComment(url)
+
+    @property
+    def _content_info(self):
+        # self.soup.find("div", attrs={"class": "t_f"})
+        return self.soup.find("div", attrs={"class": "pcb"})
+
+    @property
+    def content_kv_info(self):
+        kvs = []
+        for line in self._content_info.get_text().replace("\r", "").split("\n"):
+            if line.find("】：") >= 0:
+                try:
+                    kvs.append({
+                        "key": re.findall("【.*?】", line)[0][1:-1],
+                        "value": re.findall("】：.*", line)[0][2:],
+                    })
+                except:
+                    pass
+        return kvs
+
+    @property
+    def image_list(self):
+        return [img.get("file") for img in self._content_info.find_all("img") if img.get("file") is not None]
 
     @property
     def zone(self):
@@ -68,38 +148,6 @@ class ForumThreadComment(LazySoup):
             "name": author_block.get_text(),
             "url": author_block.get("href")
         }
-
-
-class ForumThread(ForumThreadComment):
-    """
-    论坛的帖子
-    """
-
-    def __init__(self, url: str):
-        super().__init__(url)
-
-    @property
-    def _content_info(self):
-        # self.soup.find("div", attrs={"class": "t_f"})
-        return self.soup.find("div", attrs={"class": "pcb"})
-
-    @property
-    def content_kv_info(self):
-        kvs = []
-        for line in self._content_info.get_text().replace("\r", "").split("\n"):
-            if line.find("】：") >= 0:
-                try:
-                    kvs.append({
-                        "key": re.findall("【.*?】", line)[0][1:-1],
-                        "value": re.findall("】：.*", line)[0][2:],
-                    })
-                except:
-                    pass
-        return kvs
-
-    @property
-    def image_list(self):
-        return [img.get("file") for img in self._content_info.find_all("img") if img.get("file") is not None]
 
     def create_document(self):
         return {
