@@ -22,4 +22,4 @@ def priority_get_from_dict(d: dict, ks: list):
 
 
 def process_html_string(text: str):
-    return text.strip(" \n")
+    return text.strip(" \n\r")
