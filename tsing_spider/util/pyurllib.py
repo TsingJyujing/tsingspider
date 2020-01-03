@@ -19,23 +19,28 @@ from tsing_spider.config import get_request_timeout, get_user_agent, get_xml_dec
 log = logging.getLogger(__file__)
 
 
-def http_get(url: str):
+def http_get(url: str, headers: dict = None):
     """
     Get raw data by URL
+    :param headers:
     :param url:
     :return:
     """
     log.debug("Trying to get url: {}".format(url))
     host = re.findall('://.*?/', url, re.DOTALL)[0][3:-1]
+    udf_headers = {
+        'User-Agent': get_user_agent(),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
+        'Host': host,
+    }
+    if headers is not None:
+        for k, v in udf_headers.items():
+            udf_headers[str(k)] = str(v)
     response = requests_session.get(
         url,
         timeout=get_request_timeout(),
-        headers={
-            'User-Agent': get_user_agent(),
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
-            'Host': host,
-        },
+        headers=udf_headers,
         verify=False,
     )
     response.raise_for_status()
