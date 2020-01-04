@@ -8,7 +8,8 @@ setup(
     install_requires=[
         "requests",
         "BeautifulSoup4",
-        "lxml"
+        "lxml",
+        "pytz",
     ],
     packages=find_packages(
         exclude=(
