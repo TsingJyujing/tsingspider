@@ -217,12 +217,12 @@ class ForumThreadComment(LazySoup):
         return int(re.findall(r"-(\d+)-\d+.html", self._url)[0])
 
     @property
-    def first_page(self):
+    def is_first_page(self):
         """
         是不是第一页（也就是有正文的一页）
         :return:
         """
-        return self.page_index <= 1
+        return self.page_index == 1
 
     @property
     def title(self):
@@ -262,19 +262,35 @@ class ForumThreadComment(LazySoup):
                 ).find_all("div")
                 if item.get("id") is not None and re.match(r"post_\d+", item.get("id"))
             ]
-            self._post_list_buffer = [Floor.parse_floor(item) for item in items]
+            floors = []
+            for i, item in enumerate(items):
+                try:
+                    if item.find("div", attrs={"class": "locked"}) is None:
+                        floors.append(Floor.parse_floor(item))
+                    else:
+                        log.info("Floor {} in page {} is locked".format(
+                            i + 1, self._url
+                        ))
+                except Exception as ex:
+                    if self.is_first_page and i == 0:
+                        raise ex
+                    else:
+                        log.warning("Error while analysis floor {} in page {}".format(
+                            i + 1, self._url
+                        ))
+            self._post_list_buffer = floors
         return self._post_list_buffer
 
     @property
     def comments(self) -> List[Floor]:
-        if self.page_index == 1:
+        if self.is_first_page:
             return self.floors[1:]
         else:
             return self.floors
 
     @property
     def subject(self) -> Floor:
-        if self.page_index == 1:
+        if self.is_first_page:
             return self.floors[0]
         else:
             raise Exception("Can't get subject floor while page index is {}".format(self.page_index))
@@ -325,6 +341,18 @@ class ForumThread(ForumThreadComment):
             raise ex
 
     @property
+    def m3u8_videos(self):
+        video_urls = []
+        video_blocks = self.soup.find_all("div", attrs={"class": "playerWrap ckplayerPlugin"})
+        if video_blocks is not None:
+            for video_block in video_blocks:
+                if video_block.get("data-high") is not None:
+                    video_urls.append(video_block.get("data-high"))
+                elif video_block.get("data-normal") is not None:
+                    video_urls.append(video_block.get("data-normal"))
+        return video_urls
+
+    @property
     def json(self):
         return {
             "_id": self._url,
@@ -333,6 +361,7 @@ class ForumThread(ForumThreadComment):
             "zone": self.zone,
             "title": self.title,
             "subject": self.subject.json,
+            "videos": self.m3u8_videos,
             "comments": [c.json for c in self.all_comments]
         }
 
