@@ -234,19 +234,23 @@ class ForumThreadComment(LazySoup):
         获取总页数
         :return:
         """
-        return int(re.findall(
-            r"\d+",
-            self.soup.find(
-                "div", attrs={"class": "pg"}
-            ).find(
-                "label"
-            ).find(
-                "span"
-            ).get(
-                "title"
-            ),
-            re.DOTALL
-        )[0])
+        try:
+            return int(re.findall(
+                r"\d+",
+                self.soup.find(
+                    "div", attrs={"class": "pg"}
+                ).find(
+                    "label"
+                ).find(
+                    "span"
+                ).get(
+                    "title"
+                ),
+                re.DOTALL
+            )[0])
+        except AttributeError as _:
+            log.debug("Can't find in some stage, return 1 as page count")
+            return 1
 
     @property
     def floors(self):
@@ -302,7 +306,7 @@ class ForumThread(ForumThreadComment):
     def all_comments(self):
         comments = self.comments.copy()
         for i in range(1, self.page_count):
-            comments += self._get_page(i + 1)
+            comments += self._get_page(i + 1).comments
         return comments
 
     @property
@@ -329,7 +333,7 @@ class ForumThread(ForumThreadComment):
             "zone": self.zone,
             "title": self.title,
             "subject": self.subject.json,
-            "comments": [c.json for c in self.comments]
+            "comments": [c.json for c in self.all_comments]
         }
 
 
