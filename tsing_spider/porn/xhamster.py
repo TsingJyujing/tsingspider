@@ -8,10 +8,11 @@ import json
 import logging
 import re
 
-from tsing_spider.util import priority_get_from_dict
 from tsing_spider.util import LazySoup
+from tsing_spider.util import priority_get_from_dict
 
 log = logging.getLogger(__file__)
+
 
 # fixme 增加对索引页和搜索页的借口
 
