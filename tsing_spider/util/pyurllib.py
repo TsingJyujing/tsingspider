@@ -22,7 +22,6 @@ log = logging.getLogger(__file__)
 def http_get(url: str, headers: dict = None):
     """
     Get raw data by URL
-    :param headers:
     :param url:
     :return:
     """
@@ -153,8 +152,8 @@ class LazySoup(LazyContent):
     懒加载的Soup
     """
 
-    def __init__(self, url: str, parser: str = "html.parser"):
-        self.__parser = parser
+    def __init__(self, url: str, parser: str = None):
+        self.__parser = parser if parser is not None else get_xml_decoder()
         self.__soup = None
         LazyContent.__init__(self, url)
 

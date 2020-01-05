@@ -26,3 +26,7 @@ def priority_get_from_dict(d: dict, ks: list):
 
 def time_parser(datestr: str):
     return datetime.strptime(datestr, "%Y-%m-%d %H:%M:%S")
+
+
+def try_to_json(jsonable_object):
+    return jsonable_object.json if jsonable_object is not None else None
