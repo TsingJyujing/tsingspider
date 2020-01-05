@@ -83,7 +83,9 @@ class CaoliuTest(unittest.TestCase):
         log.info(caoliu.get_page_text(self.data))
 
     def test_get_images(self):
-        log.info(caoliu.get_page_images(self.data))
+        images = caoliu.get_page_images(self.data)
+        assert len(images) > 0, "No images"
+        log.info(images)
 
 
 class Sex8ccTest(unittest.TestCase):
