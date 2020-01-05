@@ -7,4 +7,4 @@
 from .pyurllib import http_get, http_get_soup, LazyContent, LazySoup, \
     DownloadTask, LiteDataDownloader, LiteFileDownloader
 
-from .tools import process_html_string, priority_get_from_dict
+from .tools import process_html_string, priority_get_from_dict, try_to_json

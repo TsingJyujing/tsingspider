@@ -4,13 +4,15 @@
 Created on 2019-03-29
 @author: Yuan Yi fan
 """
-
 import logging
 import re
 import traceback
 from functools import lru_cache
+from typing import List
 
-from tsing_spider.util import LazySoup, process_html_string
+from bs4 import BeautifulSoup
+
+from tsing_spider.util import LazySoup, process_html_string, try_to_json
 
 log = logging.getLogger(__file__)
 
@@ -22,7 +24,7 @@ class User:
         self.name = name
 
     @property
-    def doc(self):
+    def json(self):
         return dict(
             name=self.name,
             uid=self.uid,
@@ -39,14 +41,163 @@ class User:
         raise Exception("Can't find uid in string: {}".format(url))
 
     @staticmethod
-    def extract_user(a_tag):
+    def parse_user(a_tag):
         return User(
             name=process_html_string(a_tag.get_text()),
             uid=User.extract_uid(a_tag.get("href"))
         )
 
+    def __str__(self):
+        return "{}({})".format(
+            self.name, self.uid
+        )
 
-# fixme 重写获取所有评论的代码，使用页面LRU缓存
+    def __repr__(self):
+        return "User({},{})".format(
+            repr(self.name),
+            repr(self.uid)
+        )
+
+
+class Reply:
+    """
+    回复某一个楼层的详细信息
+    """
+
+    def __init__(self, user_from: User, content: str, tick: str, user_to: User = None):
+        self.tick = tick
+        self.content = content
+        self.user_to = user_to
+        self.user_from = user_from
+
+    @property
+    def json(self):
+        return {
+            "user_from": try_to_json(self.user_from),
+            "user_to": try_to_json(self.user_to),
+            "content": self.content,
+            "tick": self.tick,
+        }
+
+    @staticmethod
+    def parse_reply(item: BeautifulSoup):
+        users = []
+        for u in item.find_all("a", attrs={"class": "tshuz_at", "target": "_blank"}):
+            users.append(
+                User(
+                    process_html_string(u.get_text()),
+                    User.extract_uid(u.get("href"))
+                )
+            )
+        if len(users) < 1:
+            raise Exception("Can't find user information")
+        content = process_html_string(item.find("span", attrs={"class": "tshuz_cnt_main"}).get_text())
+        tick = item.find("div", attrs={"class": "tshuz_time"}).find("span").get("title")
+
+        return Reply(
+            users[0],
+            content=content,
+            tick=tick,
+            user_to=users[1] if len(users) >= 2 else None
+        )
+
+    @staticmethod
+    def parse_replies(search_block: BeautifulSoup):
+        if search_block is None:
+            return []
+        results = []
+        replies_li = search_block.find_all("li")
+        if replies_li is None:
+            return []
+        for item in (
+                f for f in replies_li
+                if f.get("id") is not None and re.match(r"floor_\d+", f.get("id"))
+        ):
+            try:
+                results.append(
+                    Reply.parse_reply(item)
+                )
+            except Exception as _:
+                log.error("Error while parsing reply from item:\n {} \ncaused by: \n{}".format(
+                    str(item), traceback.format_exc()
+                ))
+        return results
+
+
+class Floor:
+    def __init__(self, content_text: str, image_list: List[str], author: User, tick: str, replies: List[Reply]):
+        self.replies = replies
+        self.tick = tick
+        self.author = author
+        self.image_list = image_list
+        self.content_text = content_text
+
+    @property
+    def json(self):
+        return {
+            "replies": [reply.json for reply in self.replies],
+            "tick": self.tick,
+            "author": self.author.json,
+            "image_list": self.image_list,
+            "content": self.content_text
+        }
+
+    @staticmethod
+    def parse_floor(item):
+        return Floor(
+            image_list=Floor.parse_content_images(item),
+            author=Floor.parse_author(item),
+            tick=Floor.parse_tick(item),
+            replies=Floor.parse_replies(item),
+            content_text=Floor.parse_content_text(item),
+        )
+
+    @staticmethod
+    def parse_replies(item: BeautifulSoup):
+        return Reply.parse_replies(
+            item.find("div", attrs={"class": "tshuz_reply"})
+        )
+
+    @staticmethod
+    def parse_author(item: BeautifulSoup):
+        return User.parse_user(
+            item.find("a", attrs={"class": "xw1"})
+        )
+
+    @staticmethod
+    def parse_tick(item: BeautifulSoup):
+        t_em = [
+            x
+            for x in item.find_all("em")
+            if x.get("id") is not None and re.match(r"authorposton\d+", x.get("id"))
+        ][0]
+
+        if t_em.find("span") is not None:
+            return t_em.find("span").get("title")
+        else:
+            return re.findall(r"20[\d:\-\s]+", t_em.get_text())[0]
+
+    @staticmethod
+    def parse_content_text(item):
+        content = item.find("td", attrs={"class": "t_f"})
+        if content is None:
+            content = item.find("div", attrs={"class": "t_f"})
+        if content is None:
+            raise Exception("Can't find content container in item block.")
+        # Remove no permission tip and image text tip
+        remove_list = content.find_all("div", attrs={"class": "attach_nopermission attach_tips"})
+        if remove_list is not None:
+            [s.extract() for s in remove_list]
+        remove_list = content.find_all("div", attrs={"class": "tip tip_4 aimg_tip"})
+        if remove_list is not None:
+            [s.extract() for s in remove_list]
+
+        return process_html_string(content.get_text())
+
+    @staticmethod
+    def parse_content_images(item: BeautifulSoup):
+        return [i.get("file") for i in item.find_all("img") if i.get("file") is not None]
+
 
 class ForumThreadComment(LazySoup):
     """
@@ -55,6 +206,23 @@ class ForumThreadComment(LazySoup):
 
     def __init__(self, url: str):
         super().__init__(url)
+        self._post_list_buffer = None
+
+    @property
+    def page_index(self):
+        """
+        当前是第几页
+        :return:
+        """
+        return int(re.findall(r"-(\d+)-\d+.html", self._url)[0])
+
+    @property
+    def first_page(self):
+        """
+        是不是第一页（也就是有正文的一页）
+        :return:
+        """
+        return self.page_index <= 1
 
     @property
     def title(self):
@@ -81,8 +249,31 @@ class ForumThreadComment(LazySoup):
         )[0])
 
     @property
-    def _poster_list(self):
-        return self.soup.find("div", attrs={"id": "postlist", "class": "pl bm"})
+    def floors(self):
+        if self._post_list_buffer is None:
+            items = [
+                item
+                for item in self.soup.find(
+                    "div", attrs={"id": "postlist", "class": "pl bm"}
+                ).find_all("div")
+                if item.get("id") is not None and re.match(r"post_\d+", item.get("id"))
+            ]
+            self._post_list_buffer = [Floor.parse_floor(item) for item in items]
+        return self._post_list_buffer
+
+    @property
+    def comments(self) -> List[Floor]:
+        if self.page_index == 1:
+            return self.floors[1:]
+        else:
+            return self.floors
+
+    @property
+    def subject(self) -> Floor:
+        if self.page_index == 1:
+            return self.floors[0]
+        else:
+            raise Exception("Can't get subject floor while page index is {}".format(self.page_index))
 
 
 class ForumThread(ForumThreadComment):
@@ -99,31 +290,20 @@ class ForumThread(ForumThreadComment):
 
     @lru_cache(maxsize=256)
     def _get_page(self, page_index: int):
+        """
+        Get some page in this thread
+        :param page_index: from 1 to N
+        :return:
+        """
         url = self._get_sub_page_url(self._url, page_index)
         return ForumThreadComment(url)
 
     @property
-    def _content_info(self):
-        # self.soup.find("div", attrs={"class": "t_f"})
-        return self.soup.find("div", attrs={"class": "pcb"})
-
-    @property
-    def content_kv_info(self):
-        kvs = []
-        for line in self._content_info.get_text().replace("\r", "").split("\n"):
-            if line.find("】：") >= 0:
-                try:
-                    kvs.append({
-                        "key": re.findall("【.*?】", line)[0][1:-1],
-                        "value": re.findall("】：.*", line)[0][2:],
-                    })
-                except:
-                    pass
-        return kvs
-
-    @property
-    def image_list(self):
-        return [img.get("file") for img in self._content_info.find_all("img") if img.get("file") is not None]
+    def all_comments(self):
+        comments = self.comments.copy()
+        for i in range(1, self.page_count):
+            comments += self._get_page(i + 1)
+        return comments
 
     @property
     def zone(self):
@@ -131,7 +311,7 @@ class ForumThread(ForumThreadComment):
         try:
             return re.findall("\\[.*?\\]", title_block.get_text())[0][1:-1]
         except IndexError as _:
-            log.info("Can't find zone info from page {}".format(self._url))
+            log.info("There's no zone info from page {}".format(self._url))
             return None
         except Exception as ex:
             log.error("Error while get the zone of page {} caused by {}".format(
@@ -141,25 +321,15 @@ class ForumThread(ForumThreadComment):
             raise ex
 
     @property
-    def author(self):
-        author_block = self.soup.find(
-            "a", attrs={"class": "xw1", "target": "_blank"})
-        return {
-            "name": author_block.get_text(),
-            "url": author_block.get("href")
-        }
-
-    def create_document(self):
+    def json(self):
         return {
             "_id": self._url,
             "type": "thread",
             "url": self._url,
-            "info": self.content_kv_info,
-            "text": self._content_info.get_text(),
-            "images": self.image_list,
-            "author": self.author,
             "zone": self.zone,
-            "title": self.title
+            "title": self.title,
+            "subject": self.subject.json,
+            "comments": [c.json for c in self.comments]
         }
 
 

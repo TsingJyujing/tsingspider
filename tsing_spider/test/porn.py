@@ -4,7 +4,7 @@ import unittest
 
 from tsing_spider.porn import xhamster, sex8cc, caoliu
 from tsing_spider.porn.xvideos import XVideoIndexPage, XVideosVideoPage
-from tsing_spider.util import http_get_soup, http_get
+from tsing_spider.util import http_get_soup
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__file__)
@@ -103,10 +103,8 @@ class Sex8ccTest(unittest.TestCase):
             len(urls),
             "\n".join(urls)
         ))
-        th = sex8cc.ForumThread(f.thread_list_url[0])
-        log.info("PageInfo:\n" + json.dumps(th.create_document(), indent=2))
-        for i, url in enumerate(th.image_list):
-            http_get(url)
+        th = sex8cc.ForumThread(urls[0])
+        log.info("PageInfo:\n" + json.dumps(th.json, indent=2))
 
 
 if __name__ == '__main__':
