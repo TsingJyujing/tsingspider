@@ -1,4 +1,7 @@
 # DataSpider
+
+[![CircleCI](https://circleci.com/gh/TsingJyujing/DataSpider.svg?style=svg)](https://circleci.com/gh/TsingJyujing/DataSpider)
+
 让大家方便的使用各种数据
 
 ## Install
