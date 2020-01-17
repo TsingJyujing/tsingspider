@@ -6,7 +6,7 @@ setup(
     name="TsingSpider",
     version=1.2,
     install_requires=[
-        "requests",
+        "requests[socks]",
         "BeautifulSoup4",
         "lxml",
         "pytz",

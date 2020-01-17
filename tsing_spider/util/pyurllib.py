@@ -4,17 +4,15 @@
 Created on 2017-2-3
 @author: Yuan Yi fan
 
-处理超链接以及超链接获取的BeautifulSoup类
+Some wrapper function for http client APIs
 """
 import logging
 import os
-import re
 import threading
-from urllib.request import urlretrieve
 
 from bs4 import BeautifulSoup
 
-from tsing_spider.config import get_request_timeout, get_user_agent, get_xml_decoder, requests_session
+from tsing_spider.config import get_request_timeout, get_xml_decoder, requests_session, get_request_header
 
 log = logging.getLogger(__file__)
 
@@ -22,24 +20,15 @@ log = logging.getLogger(__file__)
 def http_get(url: str, headers: dict = None):
     """
     Get raw data by URL
+    :param headers: external headers
     :param url:
     :return:
     """
     log.debug("Trying to get url: {}".format(url))
-    host = re.findall('://.*?/', url, re.DOTALL)[0][3:-1]
-    udf_headers = {
-        'User-Agent': get_user_agent(),
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
-        'Host': host,
-    }
-    if headers is not None:
-        for k, v in udf_headers.items():
-            udf_headers[str(k)] = str(v)
     response = requests_session.get(
         url,
         timeout=get_request_timeout(),
-        headers=udf_headers,
+        headers=get_request_header(url, headers),
         verify=False,
     )
     response.raise_for_status()
@@ -47,6 +36,11 @@ def http_get(url: str, headers: dict = None):
 
 
 def http_get_soup(url: str):
+    """
+    Get soup
+    :param url:
+    :return:
+    """
     return BeautifulSoup(http_get(url), get_xml_decoder())  # html.parser
 
 
@@ -107,17 +101,29 @@ class DownloadTask(threading.Thread):
     Large file download to file
     """
 
-    def __init__(self, src_url, dst_path):
-        # type: (str, str) -> DownloadTask
+    def __init__(self, url: str, filepath: str, chuck_size: int = 81920):
         threading.Thread.__init__(self)
-        self.url = src_url
-        self.dst = dst_path
+        self.url = url
+        self.filepath = filepath
+        self.chuck_size = chuck_size
+        self.downloaded_size = 0
+        self.done = False
 
     def run(self):
-        urlretrieve(
-            url=self.url,
-            filename=self.dst,
-            reporthook=lambda a, b, c: __download_callback(a, b, c, "%s-->%s" % (self.url, self.dst)))
+        with open(self.filepath, "wb") as fp:
+            with requests_session.get(
+                    self.url,
+                    stream=True,
+                    timeout=get_request_timeout(),
+                    headers=get_request_header(self.url),
+                    verify=False,
+            ) as response:
+                response.raise_for_status()
+                chucks = (chuck for chuck in response.iter_content(chunk_size=self.chuck_size) if chuck)
+                for chuck in chucks:
+                    self.downloaded_size += len(chuck)
+                    fp.write(chuck)
+        self.done = True
 
 
 class LazyContent:
@@ -132,12 +138,24 @@ class LazyContent:
     @property
     def content(self):
         """
-        正文
+        Get the content of the request
         :return:
         """
-        if self.__data is None:
-            self.__data = http_get(self._url)
+        if not self.is_initialized:
+            self.set_content(http_get(self._url))
         return self.__data
+
+    @property
+    def is_initialized(self) -> bool:
+        return self.__data is not None
+
+    @property
+    def url(self) -> str:
+        """
+        The only safe way to get (can't modify) url
+        :return:
+        """
+        return self._url
 
     def reset_content(self):
         """
@@ -145,6 +163,13 @@ class LazyContent:
         :return:
         """
         self.__data = None
+
+    def set_content(self, value):
+        """
+        Set content manually (but not recommended call outside)
+        :return:
+        """
+        self.__data = value
 
 
 class LazySoup(LazyContent):

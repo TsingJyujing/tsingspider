@@ -6,6 +6,7 @@ Created on 2017-2-4
 
 配置文件，记录各种配置
 """
+import re
 import sqlite3
 from http.cookiejar import CookieJar, Cookie
 from typing import Optional
@@ -30,6 +31,20 @@ def set_request_timeout(value: float):
 
 # 浏览器的User Agent参数
 __USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:68.0) Gecko/20100101 Firefox/68.0"
+
+
+def get_request_header(url: str = None, additional_header: dict = None):
+    headers = {
+        'User-Agent': get_user_agent(),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
+    }
+    if url is not None:
+        headers['Host'] = re.findall('://.*?/', url, re.DOTALL)[0][3:-1]
+    if additional_header is not None:
+        for k, v in additional_header.items():
+            headers[str(k)] = str(v)
+    return headers
 
 
 def get_user_agent():
@@ -84,6 +99,18 @@ requests_session.mount(
         )
     )
 )
+
+
+def set_proxies(proxy_info: dict):
+    """
+    Set proxies for session
+    :param proxy_info: {
+                            'http': 'socks5://user:pass@host:port',
+                            'https': 'socks5://user:pass@host:port'
+                        }
+    :return:
+    """
+    requests_session.proxies = proxy_info
 
 
 def _init_cookies(cookie_jar: CookieJar, firefox_cookies_path: str):
