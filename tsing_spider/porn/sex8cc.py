@@ -400,7 +400,7 @@ class ForumPage(LazySoup):
                    and tb.get("id").startswith("normalthread_") \
                    and tb.find("a", attrs={"class": "s xst"}).get("style") is None]
         # 获取非置顶帖子列表
-        return [re.sub("-\d+-\d+\.html", "-1-1.html", url) for url in (
+        return [re.sub(r"-\d+-\d+.html", "-1-1.html", url) for url in (
             "https://{}/{}".format(self.base_host, tb.find("a", attrs={"class": "s xst"}).get("href")) for tb in tb_list
         )]
 

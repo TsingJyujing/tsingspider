@@ -1,4 +1,4 @@
-requests
+requests[socks]
 BeautifulSoup4
 lxml
 pytz

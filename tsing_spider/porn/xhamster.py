@@ -39,7 +39,7 @@ class XhamsterVideo(LazySoup):
                 log.warning("Warning: <script> block after filtered more than 1")
 
             self.__video_info = json.loads(
-                re.findall("window\.initials\s+=\s+(.*?)\\n", scripts[0])[0].strip(" \n;")
+                re.findall(r"window.initials\s+=\s+(.*?)\n", scripts[0])[0].strip(" \n;")
             )
         return self.__video_info
 
