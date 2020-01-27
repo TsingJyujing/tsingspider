@@ -6,76 +6,138 @@ Created on 2017-3-2
 """
 
 import logging
+import re
+from typing import List
 
-from tsing_spider.config import __CAOLIU_HOST
-from tsing_spider.util import http_get_soup
+from tsing_spider.config import get_caoliu_host
+from tsing_spider.util import LazySoup, process_html_string
 
 log = logging.getLogger(__file__)
 
 
-def get_page_title(page_soup):
-    """
-    :param page_soup: 页面数据的Soup
-    :return: 标题
-    """
-    return page_soup.find("h4").getText()
+class CaoliuIndexPage(LazySoup):
+    def __init__(self, page_index: int):
+        super().__init__(
+            "https://%s/thread0806.php?fid=16&search=&page=%d" % (get_caoliu_host(), page_index)
+        )
 
-
-def get_page_images(page_soup):
-    """
-    :param page_soup: 页面数据的Soup
-    :return: List<String> 页面中图片的URL
-    """
-    return [obj.get("data-src") for obj in page_soup.find(
-        name="div", attrs={"class": "tpc_content do_not_catch"}
-    ).find_all(
-        "img"
-    )]
-
-
-def get_page_text(page_soup):
-    """
-    :param page_soup: 页面数据的Soup
-    :return: String 主题文字
-    """
-    return page_soup.find(
-        name="div", attrs={"class": "tpc_content do_not_catch"}
-    ).getText()
-
-
-def get_latest_urls(page_index):
-    index_soup = http_get_soup(__generate_index_page_url(page_index))
-    h3blocks = index_soup.find(name="tbody", attrs={"style": "table-layout:fixed;"}).find_all("h3")
-    return_value = []
-    for h3block in h3blocks:
+    @staticmethod
+    def __get_font_color(asoup):
+        """
+        :param asoup:
+        :return:
+        """
         try:
-            url = "https://%s/%s" % (__CAOLIU_HOST, h3block.a.get("href"))
-            if h3block.a.get("href")[:8] != "htm_data":
-                raise Exception("Not a page url")
-            if __get_font_color(h3block.a) in ("red", "blue"):
-                raise Exception("Not a valid url")
-            # title = h3block.a.getText()
-            return_value.append(url)
+            return asoup.font.get("color")
         except:
-            pass
-    return return_value
+            return "default"
+
+    @property
+    def threads(self):
+        h3blocks = self.soup.find(name="tbody", attrs={"style": "table-layout:fixed;"}).find_all("h3")
+        return_value = []
+        for h3block in h3blocks:
+            try:
+                url = "https://%s/%s" % (get_caoliu_host(), h3block.a.get("href"))
+                if h3block.a.get("href")[:8] != "htm_data":
+                    raise ValueError("Not a page url")
+                if self.__get_font_color(h3block.a) in ("red", "blue"):
+                    raise Exception("Not a valid thread url")
+                return_value.append(url)
+            except:
+                pass
+        return return_value
 
 
-def __generate_index_page_url(page_index):
-    """
-    获取索引页面的URL
-    :param page_index: 索引页面index
-    :return: 索引页面的URL
-    """
-    return "https://%s/thread0806.php?fid=16&search=&page=%d" % (__CAOLIU_HOST, page_index)
+class CaoliuThreadComment(LazySoup):
+    def __init__(self, url: str):
+        super().__init__(url)
+
+    @property
+    def content_list(self):
+        return [
+            s.find(name="div", attrs={"class": "tpc_content"})
+            for s in self.soup.find_all("div", attrs={"class": "t t2"})
+        ]
+
+    # todo not only record content
+    @property
+    def comments(self):
+        return [
+            process_html_string(c.get_text())
+            for c in self.content_list
+        ]
 
 
-def __get_font_color(asoup):
-    """
-    :param asoup:
-    :return:
-    """
-    try:
-        return asoup.font.get("color")
-    except:
-        return "default"
+# Test page for developing: https://t66y.com/htm_data/1912/7/3748347.html
+
+class CaoliuThread(CaoliuThreadComment):
+    def __init__(self, url: str):
+        super().__init__(url)
+        self._page_buffer = dict()
+
+    @property
+    def title(self):
+        return self.soup.find("h4").getText()
+
+    @property
+    def image_list(self):
+        """
+        页面中图片的URL
+        :return:
+        """
+        return [obj.get("data-src") for obj in self.content_list[0].find_all(
+            "img"
+        )]
+
+    @property
+    def comments(self):
+        return super().comments[1:]
+
+    @property
+    def content_text(self):
+        return super().comments[0]
+
+    @property
+    def all_page_count(self) -> int:
+        return int(
+            re.findall(
+                r"\d+/(\d+)",
+                self.soup.find("a", attrs={"class": "w70"}).find("input").get("value")
+            )[0]
+        )
+
+    @property
+    def all_comments(self) -> List[str]:
+        comments = []
+        comments += self.comments
+        for i in range(2, self.all_page_count + 1):
+            comments += self._page(i).comments
+        return comments
+
+    @property
+    def tid(self):
+        return int(re.findall(r"/(\d+).html", self.url)[0])
+
+    def _get_comment_page_url(self, page_index: int):
+        return "https://t66y.com/read.php?tid={}&page={}".format(
+            self.tid, page_index
+        )
+
+    def _page(self, page_index: int) -> CaoliuThreadComment:
+        if page_index not in self._page_buffer:
+            self._page_buffer[page_index] = CaoliuThreadComment(
+                url=self._get_comment_page_url(page_index)
+            )
+        return self._page_buffer[page_index]
+
+    @property
+    def json(self):
+        return dict(
+            url=self.url,
+            tid=self.tid,
+            title=self.title,
+            image_list=self.image_list,
+            comments=self.all_comments,
+            content_text=self.content_text
+        )
