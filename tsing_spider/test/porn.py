@@ -24,6 +24,9 @@ class XhamsterTest(unittest.TestCase):
     def test_video_info(self):
         log.info(self.test_obj.json)
 
+    def test_search(self):
+        log.info(xhamster.XhamsterSearch("asian creampie").video_urls)
+
 
 class XvideosTest(unittest.TestCase):
 
@@ -52,7 +55,7 @@ class CaoliuTest(unittest.TestCase):
         urls = caoliu.CaoliuIndexPage(2).thread_urls
         cls.thread: caoliu.CaoliuThread = caoliu.CaoliuThread(urls[0])
         assert cls.thread.soup is not None, "Data download failed."
-        log.info("setUpClass successfully")
+        log.info("setUpClass successfully with url={}".format(urls[0]))
 
     def test_get_title(self):
         log.info(

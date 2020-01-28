@@ -103,12 +103,16 @@ class CaoliuThread(CaoliuThreadComment):
 
     @property
     def all_page_count(self) -> int:
-        return int(
-            re.findall(
-                r"\d+/(\d+)",
-                self.soup.find("a", attrs={"class": "w70"}).find("input").get("value")
-            )[0]
-        )
+        page_selector = self.soup.find("a", attrs={"class": "w70"})
+        if page_selector is not None:
+            return int(
+                re.findall(
+                    r"\d+/(\d+)",
+                    page_selector.find("input").get("value")
+                )[0]
+            )
+        else:
+            return 1
 
     @property
     def all_comments(self) -> List[str]:
