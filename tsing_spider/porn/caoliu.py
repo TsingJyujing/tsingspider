@@ -34,6 +34,10 @@ class CaoliuIndexPage(LazySoup):
 
     @property
     def threads(self):
+        return [CaoliuThread(url) for url in self.thread_urls]
+
+    @property
+    def thread_urls(self):
         h3blocks = self.soup.find(name="tbody", attrs={"style": "table-layout:fixed;"}).find_all("h3")
         return_value = []
         for h3block in h3blocks:

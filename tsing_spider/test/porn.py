@@ -71,21 +71,15 @@ class XvideosTest(unittest.TestCase):
 class CaoliuTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        urls = caoliu.get_latest_urls(2)
-        cls.data = http_get_soup(urls[0])
-        assert cls.data is not None, "Data download failed."
+        urls = caoliu.CaoliuIndexPage(2).thread_urls
+        cls.thread:caoliu.CaoliuThread = caoliu.CaoliuThread(urls[0])
+        assert cls.thread.soup is not None, "Data download failed."
         log.info("setUpClass successfully")
 
     def test_get_title(self):
-        log.info(caoliu.get_page_title(self.data))
-
-    def test_get_text(self):
-        log.info(caoliu.get_page_text(self.data))
-
-    def test_get_images(self):
-        images = caoliu.get_page_images(self.data)
-        assert len(images) > 0, "No images"
-        log.info(images)
+        log.info(
+            self.thread.json
+        )
 
 
 class Sex8ccTest(unittest.TestCase):
