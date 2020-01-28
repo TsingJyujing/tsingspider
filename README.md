@@ -7,7 +7,7 @@
 ## Install
 
 ```bash
-pip3 install -e git+https://github.com/TsingJyujing/DataSpider.git#egg=TsingSpider
+pip install --upgrade --src="$HOME/.src" -e git+https://github.com/TsingJyujing/DataSpider.git#egg=TsingSpider
 ```
 
 ## 前言

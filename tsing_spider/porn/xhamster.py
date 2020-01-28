@@ -14,7 +14,22 @@ from tsing_spider.util import priority_get_from_dict
 log = logging.getLogger(__file__)
 
 
-# fixme 增加对索引页和搜索页的借口
+class XhamsterIndex(LazySoup):
+
+    def __init__(self, url: str):
+        super().__init__(url)
+
+    @property
+    def videos(self):
+        return [XhamsterVideo(url) for url in self.video_urls]
+
+    @property
+    def video_urls(self):
+        return [
+            div.find("a", attrs={"class": "video-thumb__image-container thumb-image-container"}).get("href")
+            for div in self.soup.find_all("div", attrs={"class": "thumb-list__item video-thumb video-thumb--dated"})
+        ]
+
 
 class XhamsterVideo(LazySoup):
     """
@@ -83,3 +98,14 @@ class XhamsterVideo(LazySoup):
     @property
     def preview_image(self):
         return self.video_info["videoModel"]["thumbURL"]
+
+    @property
+    def json(self):
+        return dict(
+            url=self.url,
+            title=self.title,
+            download_link=self.download_link,
+            video_info=self.video_info,
+            rating=self.rating,
+            categories=self.categories,
+        )

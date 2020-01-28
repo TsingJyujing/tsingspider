@@ -14,37 +14,13 @@ class XhamsterTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.test_obj = xhamster.XhamsterVideo(
-            "https://xhamster.com/videos/hot-german-milf-female-teacher-show-how-to-fuck-private-11500990"
-        )
+        cls.pages = []
+        for i in (1, 2):
+            cls.pages += xhamster.XhamsterIndex("https://xhamster.com/{}".format(i)).videos
+        cls.test_obj = cls.pages[-1]
 
     def test_video_info(self):
-        log.info("Video Info: \n{}".format(
-            "\n".join(
-                "{}=[{}]".format(k, type(v)) for k, v in self.test_obj.video_info.items()
-            )
-        ))
-
-    def test_title(self):
-        log.info("Title={}".format(self.test_obj.title))
-
-    def test_categories(self):
-        log.info("Categories={}".format("\n".join(
-            "{}->{}".format(item["text"], item["link"])
-            for item in self.test_obj.categories
-        )))
-
-    def test_rating(self):
-        log.info("Rating={}".format(self.test_obj.rating))
-
-    def test_duration(self):
-        log.info("Duration={}".format(self.test_obj.duration))
-
-    def test_download_link(self):
-        log.info("Download Link={}".format(self.test_obj.download_link))
-
-    def test_preview_image(self):
-        log.info("Preview Image={}".format(self.test_obj.preview_image))
+        log.info(self.test_obj.json)
 
 
 class XvideosTest(unittest.TestCase):
@@ -72,7 +48,7 @@ class CaoliuTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         urls = caoliu.CaoliuIndexPage(2).thread_urls
-        cls.thread:caoliu.CaoliuThread = caoliu.CaoliuThread(urls[0])
+        cls.thread: caoliu.CaoliuThread = caoliu.CaoliuThread(urls[0])
         assert cls.thread.soup is not None, "Data download failed."
         log.info("setUpClass successfully")
 
