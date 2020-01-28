@@ -7,17 +7,14 @@ Created on 2017-3-2
 import json
 import logging
 import re
-
+from urllib.parse import quote
 from tsing_spider.util import LazySoup
 from tsing_spider.util import priority_get_from_dict
 
 log = logging.getLogger(__file__)
 
 
-class XhamsterIndex(LazySoup):
-
-    def __init__(self, url: str):
-        super().__init__(url)
+class BaseXhamsterIndex(LazySoup):
 
     @property
     def videos(self):
@@ -29,6 +26,32 @@ class XhamsterIndex(LazySoup):
             div.find("a", attrs={"class": "video-thumb__image-container thumb-image-container"}).get("href")
             for div in self.soup.find_all("div", attrs={"class": "thumb-list__item video-thumb video-thumb--dated"})
         ]
+
+    @property
+    def page_count(self):
+        return max(
+            int(s.get("data-page"))
+            for s in self.soup.find_all("a", attrs={"class": "xh-paginator-button"})
+            if s.get("data-page") is not None
+        )
+
+
+class XhamsterIndex(BaseXhamsterIndex):
+    def __init__(self, index: int):
+        if index == 1:
+            super().__init__("https://xhamster.com/")
+        elif index > 1:
+            super().__init__("https://xhamster.com/{}".format(index))
+        else:
+            raise ValueError("Index value error, should be a positive integer but get {}".format(index))
+
+
+class XhamsterSearch(BaseXhamsterIndex):
+    def __init__(self, query: str, index: int = 1):
+        url = "https://xhamster.com/search/{}".format(quote(query))
+        if index >= 2:
+            url += "?page={}".format(index)
+        super().__init__(url)
 
 
 class XhamsterVideo(LazySoup):

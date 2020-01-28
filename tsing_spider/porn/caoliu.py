@@ -64,7 +64,6 @@ class CaoliuThreadComment(LazySoup):
             for s in self.soup.find_all("div", attrs={"class": "t t2"})
         ]
 
-    # todo not only record content
     @property
     def comments(self):
         return [

@@ -16,7 +16,9 @@ class XhamsterTest(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.pages = []
         for i in (1, 2):
-            cls.pages += xhamster.XhamsterIndex("https://xhamster.com/{}".format(i)).videos
+            ip = xhamster.XhamsterIndex(i)
+            cls.pages += ip.videos
+            log.info("PageCount({})={}".format(i, ip.page_count))
         cls.test_obj = cls.pages[-1]
 
     def test_video_info(self):
