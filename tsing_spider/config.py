@@ -101,6 +101,19 @@ requests_session.mount(
 )
 
 
+def set_request_session(new_session: requests.Session):
+    global requests_session
+    requests_session = new_session
+
+
+def reset_request_session():
+    set_request_session(requests.Session())
+
+
+def get_request_session() -> requests.Session:
+    return requests_session
+
+
 def set_proxies(proxy_info: dict):
     """
     Set proxies for session
@@ -110,7 +123,7 @@ def set_proxies(proxy_info: dict):
                         }
     :return:
     """
-    requests_session.proxies = proxy_info
+    get_request_session().proxies = proxy_info
 
 
 def _init_cookies(cookie_jar: CookieJar, firefox_cookies_path: str):
@@ -157,10 +170,10 @@ def set_cookies(firefox_cookies_path: Optional[str]):
     __COOKIES_PATH = firefox_cookies_path
     if firefox_cookies_path is None:
         warn("Haven't set a valid cookies path, use default.")
-        requests_session.cookies = CookieJar()
+        get_request_session().cookies = CookieJar()
     else:
         try:
-            requests_session.cookies = _init_cookies(CookieJar(), firefox_cookies_path)
+            get_request_session().cookies = _init_cookies(CookieJar(), firefox_cookies_path)
         except:
             warn("Error while loading firefox cookies from: {}, please check it.".format(__COOKIES_PATH))
 

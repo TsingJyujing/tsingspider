@@ -12,7 +12,8 @@ import threading
 
 from bs4 import BeautifulSoup
 
-from tsing_spider.config import get_request_timeout, get_xml_decoder, requests_session, get_request_header
+from tsing_spider.config import get_request_timeout, get_xml_decoder, requests_session, get_request_header, \
+    get_request_session
 
 log = logging.getLogger(__file__)
 
@@ -25,7 +26,7 @@ def http_get(url: str, headers: dict = None):
     :return:
     """
     log.debug("Trying to get url: {}".format(url))
-    response = requests_session.get(
+    response = get_request_session().get(
         url,
         timeout=get_request_timeout(),
         headers=get_request_header(url, headers),
@@ -111,7 +112,7 @@ class DownloadTask(threading.Thread):
 
     def run(self):
         with open(self.filepath, "wb") as fp:
-            with requests_session.get(
+            with get_request_session().get(
                     self.url,
                     stream=True,
                     timeout=get_request_timeout(),
