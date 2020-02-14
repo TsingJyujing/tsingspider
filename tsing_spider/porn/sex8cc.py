@@ -268,7 +268,7 @@ class ForumThreadComment(LazySoup):
                     if item.find("div", attrs={"class": "locked"}) is None:
                         floors.append(Floor.parse_floor(item))
                     else:
-                        log.info("Floor {} in page {} is locked".format(
+                        log.debug("Floor {} in page {} is locked".format(
                             i + 1, self._url
                         ))
                 except Exception as ex:
@@ -331,10 +331,10 @@ class ForumThread(ForumThreadComment):
         try:
             return re.findall("\\[.*?\\]", title_block.get_text())[0][1:-1]
         except IndexError as _:
-            log.info("There's no zone info from page {}".format(self._url))
+            log.debug("There's no zone info from page {}".format(self._url))
             return None
         except Exception as ex:
-            log.error("Error while get the zone of page {} caused by {}".format(
+            log.warning("Error while get the zone of page {} caused by {}".format(
                 self._url,
                 traceback.format_exc()
             ))
