@@ -7,6 +7,7 @@ Created on 2017-3-2
 
 import logging
 import re
+import time
 from typing import List
 
 from tsing_spider.config import get_caoliu_host
@@ -75,9 +76,10 @@ class CaoliuThreadComment(LazySoup):
 # Test page for developing: https://t66y.com/htm_data/1912/7/3748347.html
 
 class CaoliuThread(CaoliuThreadComment):
-    def __init__(self, url: str):
+    def __init__(self, url: str, delay:float = 0.0):
         super().__init__(url)
         self._page_buffer = dict()
+        self.delay = delay
 
     @property
     def title(self):
@@ -125,6 +127,7 @@ class CaoliuThread(CaoliuThreadComment):
         comments = []
         comments += self.comments
         for i in range(2, self.all_page_count + 1):
+            time.sleep(self.delay)
             comments += self._page(i).comments
         return comments
 
