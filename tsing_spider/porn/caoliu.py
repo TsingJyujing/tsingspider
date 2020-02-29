@@ -89,9 +89,15 @@ class CaoliuThread(CaoliuThreadComment):
         页面中图片的URL
         :return:
         """
-        return [obj.get("data-src") for obj in self.content_list[0].find_all(
-            "img"
-        )]
+        image_list = []
+        for obj in self.content_list[0].find_all("img"):
+            data_src = obj.get("data-src")
+            src = obj.get("src")
+            if data_src is not None:
+                image_list.append(data_src)
+            elif src is not None:
+                image_list.append(src)
+        return image_list
 
     @property
     def comments(self):
