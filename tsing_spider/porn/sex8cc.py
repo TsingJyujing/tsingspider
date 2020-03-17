@@ -395,13 +395,22 @@ class ForumPage(LazySoup):
 
     @property
     def thread_list_url(self):
-        tb_list = [tb for tb in self.soup.find_all("tbody") if
-                   type(tb.get("id")) is str \
+        def _check_tbody(tb):
+            tb_a = tb.find("a", attrs={"class": "s xst"})
+            if tb_a is None:
+                return False
+            style = tb_a.get("style")
+            if style is None:
+                style_check = True
+            else:
+                style_check = style.find("bold") < 0
+            return  type(tb.get("id")) is str \
                    and tb.get("id").startswith("normalthread_") \
-                   and tb.find("a", attrs={"class": "s xst"}).get("style") is None]
+                   and style_check
         # 获取非置顶帖子列表
         return [re.sub(r"-\d+-\d+.html", "-1-1.html", url) for url in (
-            "https://{}/{}".format(self.base_host, tb.find("a", attrs={"class": "s xst"}).get("href")) for tb in tb_list
+            "https://{}/{}".format(self.base_host, tb.find("a", attrs={"class": "s xst"}).get("href"))
+            for tb in self.soup.find_all("tbody") if _check_tbody(tb)
         )]
 
     @property

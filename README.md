@@ -53,3 +53,24 @@ get_book_json(ID)
 ### DNC邮件泄露事件
 这个文件可以下载2016年美国民主党邮件服务器泄露事件所泄露出的所有邮件，大约有两万多封，但是由于服务器比较特殊，需要翻墙才能下载。
 其中包含`get_mail_data`和`save_mail`两个接口，一个仅仅读取为字符串，另一个仅仅保存到本地。
+
+# BUG
+
+## SEX8CC
+```
+ERROR:/home/yuanyifan/app/psite/pron-spider/util/topic_generator.py:Error while reading sex8cc thread url: https://sex8.cc/thread-13652385-1-1.html , skipped.
+ERROR:/home/yuanyifan/app/psite/pron-spider/util/topic_generator.py:Traceback (most recent call last):
+  File "/home/yuanyifan/app/psite/pron-spider/util/topic_generator.py", line 28, in sex8_generator
+    "title": thread.title,
+  File "/home/yuanyifan/.local/share/virtualenvs/pron-spider-AkeZSCIQ/src/tsingspider/tsing_spider/porn/sex8cc.py", line 229, in title
+    return self.soup.find("span", attrs={"id": "thread_subject"}).get_text().strip(" \n")
+AttributeError: 'NoneType' object has no attribute 'get_text'
+
+ERROR:/home/yuanyifan/app/psite/pron-spider/util/topic_generator.py:Error while reading sex8cc thread url: https://sex8.cc/thread-13652375-1-1.html , skipped.
+ERROR:/home/yuanyifan/app/psite/pron-spider/util/topic_generator.py:Traceback (most recent call last):
+  File "/home/yuanyifan/app/psite/pron-spider/util/topic_generator.py", line 28, in sex8_generator
+    "title": thread.title,
+  File "/home/yuanyifan/.local/share/virtualenvs/pron-spider-AkeZSCIQ/src/tsingspider/tsing_spider/porn/sex8cc.py", line 229, in title
+    return self.soup.find("span", attrs={"id": "thread_subject"}).get_text().strip(" \n")
+AttributeError: 'NoneType' object has no attribute 'get_text'
+```
