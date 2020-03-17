@@ -99,9 +99,20 @@ requests_session.mount(
         )
     )
 )
+requests_session.mount(
+    "https",
+    HTTPAdapter(
+        max_retries=Retry(
+            total=5,
+            backoff_factor=0.1,
+            status_forcelist=[500, 502, 503, 504]
+        )
+    )
+)
 
 
 def set_request_session(new_session: requests.Session):
+    warn("Request session reset.")
     global requests_session
     requests_session = new_session
 
