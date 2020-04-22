@@ -94,11 +94,9 @@ class CaoliuThread(CaoliuThreadComment):
         image_list = []
         for obj in self.content_list[0].find_all("img"):
             data_src = obj.get("data-src")
+            ess_data = obj.get("ess-data")
             src = obj.get("src")
-            if data_src is not None:
-                image_list.append(data_src)
-            elif src is not None:
-                image_list.append(src)
+            image_list.append(ess_data or data_src or src)
         return image_list
 
     @property
