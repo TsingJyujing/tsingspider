@@ -16,6 +16,15 @@ from tsing_spider.util import LazySoup
 
 log = logging.getLogger(__file__)
 
+JAV_H_HOST = "h.javtorrent.re"
+JAV_H_CATEGORIES = [
+    "h-game", "h-anime", "h-manga"
+]
+JAV_HOST = "javtorrent.re"
+JAV_CATEGORIES = [
+    "censored", "uncensored", "iv"
+]
+
 
 class JavItem(LazySoup):
     def __init__(self, url: str):
@@ -94,7 +103,7 @@ class JavItem(LazySoup):
         )
 
 
-class BaseIndex(LazySoup):
+class BaseJavIndex(LazySoup):
     def __init__(self, host: str, category: str, page: int, protocol: str = "http"):
         self.protocol = protocol
         self.host = host

@@ -3,7 +3,7 @@ import logging
 import unittest
 
 from tsing_spider.porn import xhamster, sex8cc, caoliu
-from tsing_spider.porn.jav import JavItem, BaseIndex
+from tsing_spider.porn.jav import JavItem, BaseJavIndex
 from tsing_spider.porn.xvideos import XVideoIndexPage, XVideosVideoPage
 
 logging.basicConfig(level=logging.DEBUG)
@@ -12,7 +12,7 @@ log = logging.getLogger(__file__)
 
 class JavTest(unittest.TestCase):
     def test_index_page(self):
-        bi = BaseIndex("h.javtorrent.re", category="h-manga", page=1)
+        bi = BaseJavIndex("h.javtorrent.re", category="h-manga", page=1)
         log.info([
             item.url
             for item in bi.items
