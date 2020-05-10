@@ -85,7 +85,7 @@ class Sex8ccTest(unittest.TestCase):
         log.info(g.forums_ids)
 
     def test_forum(self):
-        f = sex8cc.Forum(110)
+        f = sex8cc.Forum(11)
         log.info(f.get_page_count())
 
     def test_forum_page_thread(self):
