@@ -3,11 +3,26 @@ import logging
 import unittest
 
 from tsing_spider.porn import xhamster, sex8cc, caoliu
+from tsing_spider.porn.jav import JavItem, BaseIndex
 from tsing_spider.porn.xvideos import XVideoIndexPage, XVideosVideoPage
-from tsing_spider.util import http_get_soup
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__file__)
+
+
+class JavTest(unittest.TestCase):
+    def test_index_page(self):
+        bi = BaseIndex("h.javtorrent.re", category="h-manga", page=1)
+        log.info([
+            item.url
+            for item in bi.items
+        ])
+
+    def test_item(self):
+        test_item = JavItem("http://h.javtorrent.re/h-manga/11043/")
+        log.info(test_item.json)
+        log.info(f"Torrent Size: {len(test_item.torrent)}")
+        log.info(f"Image Size: {len(test_item.image)}")
 
 
 class XhamsterTest(unittest.TestCase):
