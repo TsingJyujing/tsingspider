@@ -19,9 +19,10 @@ class JavTest(unittest.TestCase):
         ])
 
     def test_item(self):
-        test_item = JavItem("http://h.javtorrent.re/h-manga/11043/")
+        test_item = JavItem("http://javtorrent.re/censored/183576/")
         log.info(test_item.json)
-        log.info(f"Torrent Size: {len(test_item.torrent)}")
+        for torrent in test_item.torrents:
+            log.info(f"Torrent Size: {len(torrent)}")
         log.info(f"Image Size: {len(test_item.image)}")
 
 

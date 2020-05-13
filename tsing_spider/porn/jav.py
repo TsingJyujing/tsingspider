@@ -25,7 +25,6 @@ JAV_CATEGORIES = [
     "censored", "uncensored", "iv"
 ]
 
-
 class JavItem(LazySoup):
     def __init__(self, url: str):
         super().__init__(url)
@@ -37,8 +36,14 @@ class JavItem(LazySoup):
         return self.soup.find("div", attrs={"id": "content"})
 
     @property
-    def torrent_resid(self) -> str:
-        return re.findall(r"d=(.*?)$", self._content.find("div", attrs={"class": "single-t"}).find("a").get("href"))[0]
+    def torrent_resid_list(self) -> List[str]:
+        result = []
+        for block in self._content.find_all("div", attrs={"class": "single-t"}):
+            try:
+                result.append(re.findall(r"d=(.*?)$", block.find("a").get("href"))[0])
+            except Exception as ex:
+                log.debug("Failed to parse single-t block", exc_info=ex)
+        return result
 
     @property
     def title(self) -> str:
@@ -81,15 +86,21 @@ class JavItem(LazySoup):
         return self._image_ls.content
 
     @property
-    def torrent(self) -> bytes:
+    def torrents(self) -> List[bytes]:
         if self._torrent_ls is None:
-            self._torrent_ls = LazySoup(
-                url=f"http://jtl.re/d/{self.torrent_resid}.torrent",
-                headers={
-                    "Referer": f"http://1on.re/d.php?d={self.torrent_resid}"
-                }
-            )
-        return self._torrent_ls.content
+            torrents = []
+            for torrent_resid in self.torrent_resid_list:
+                torrents.append(LazySoup(
+                    url=f"http://jtl.re/d/{torrent_resid}.torrent",
+                    headers={
+                        "Referer": f"http://1on.re/d.php?d={torrent_resid}"
+                    }
+                ))
+            self._torrent_ls = torrents
+        return [
+            ls.content
+            for ls in self._torrent_ls
+        ]
 
     @property
     def json(self):
@@ -97,7 +108,7 @@ class JavItem(LazySoup):
             url=self.url,
             title=self.title,
             image_url=self.image_url,
-            torrent_resid=self.torrent_resid,
+            torrent_resid_list=self.torrent_resid_list,
             tags=self.tags,
             time=self.time.strftime("%Y-%m-%d %H:%M"),
         )
