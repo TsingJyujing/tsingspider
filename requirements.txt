@@ -3,3 +3,5 @@ BeautifulSoup4
 lxml
 pytz
 pytest
+git+git://github.com/globocom/m3u8.git#egg=m3u8
+pycryptodomex
