@@ -67,9 +67,9 @@ class XhamsterVideo(LazySoup):
     def video_info(self):
         if self.__video_info is None:
             scripts = [
-                s.get_text()
+                repr(s)
                 for s in self.soup.find_all("script")
-                if s.get_text().find("window.initials") >= 0
+                if repr(s).find("window.initials") >= 0
             ]
             if len(scripts) <= 0:
                 raise Exception("Can't find information <script> block")

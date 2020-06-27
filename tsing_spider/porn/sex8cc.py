@@ -341,9 +341,9 @@ class ForumThread(ForumThreadComment):
             raise ex
 
     @property
-    def m3u8_videos(self):
+    def m3u8_video_links(self):
         video_urls = []
-        video_blocks = self.soup.find_all("div", attrs={"class": "playerWrap ckplayerPlugin"})
+        video_blocks = self.soup.find_all("video")
         if video_blocks is not None:
             for video_block in video_blocks:
                 if video_block.get("data-high") is not None:
@@ -361,7 +361,7 @@ class ForumThread(ForumThreadComment):
             "zone": self.zone,
             "title": self.title,
             "subject": self.subject.json,
-            "videos": self.m3u8_videos,
+            "videos": self.m3u8_video_links,
             "comments": [c.json for c in self.all_comments]
         }
 
