@@ -24,7 +24,7 @@ class M3U8Downloader:
             )
             log.info(f"Multi playlists found, loading the video which bandwidth={bw_uri[0][1]} uri={bw_uri[0][0]}")
             self.playlist = m3u8.load(bw_uri[0][0])
-        if len(self.playlist.keys) == 1:
+        if len(self.playlist.keys) == 1 and self.playlist.keys[0] is not None:
             key = self.playlist.keys[0]
             if not key.method.startswith("AES"):
                 raise Exception(f"Unsupported crypt method: {key.method}")
