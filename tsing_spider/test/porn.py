@@ -6,10 +6,38 @@ import pytest
 
 from tsing_spider.porn import xhamster, sex8cc, caoliu
 from tsing_spider.porn.jav import JavItem, BaseJavIndex
+from tsing_spider.porn.xarthunter import (
+    XarthunterImageIndexPage,
+    XarthunterImageItemPage,
+    XarthunterVideoIndexPage,
+    XarthunterVideoItemPage
+)
 from tsing_spider.porn.xvideos import XVideoIndexPage, XVideosVideoPage
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__file__)
+
+
+class XarthunterTest(unittest.TestCase):
+    def test_image_index_page(self):
+        log.info(
+            XarthunterImageIndexPage.create(2)._item_urls
+        )
+
+    def test_video_index_page(self):
+        log.info(
+            XarthunterVideoIndexPage.create(2)._item_urls
+        )
+
+    def test_image_item_page(self):
+        log.info(
+            XarthunterImageItemPage("https://www.xarthunter.com/sexy-model-aidra-toying-her-pussy/").json
+        )
+
+    def test_video_item_page(self):
+        log.info(
+            XarthunterVideoItemPage("https://www.xarthunter.com/jessica-model-couple-video/").json
+        )
 
 
 class JavTest(unittest.TestCase):
