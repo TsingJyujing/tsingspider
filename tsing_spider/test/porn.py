@@ -8,9 +8,8 @@ from tsing_spider.porn import xhamster, sex8cc, caoliu
 from tsing_spider.porn.jav import JavItem, BaseJavIndex
 from tsing_spider.porn.xarthunter import (
     XarthunterImageIndexPage,
-    XarthunterImageItemPage,
+    XarthunterItemPage,
     XarthunterVideoIndexPage,
-    XarthunterVideoItemPage
 )
 from tsing_spider.porn.xvideos import XVideoIndexPage, XVideosVideoPage
 
@@ -20,23 +19,21 @@ log = logging.getLogger(__file__)
 
 class XarthunterTest(unittest.TestCase):
     def test_image_index_page(self):
-        log.info(
-            "\n".join(XarthunterImageIndexPage.create(2)._item_urls)
-        )
+        for url in XarthunterImageIndexPage.create(2)._item_urls:
+            log.info(url)
 
     def test_video_index_page(self):
-        log.info(
-            "\n".join(XarthunterVideoIndexPage.create(2)._item_urls)
-        )
+        for url in XarthunterVideoIndexPage.create(2)._item_urls:
+            log.info(url)
 
     def test_image_item_page(self):
         log.info(
-            XarthunterImageItemPage("https://www.xarthunter.com/sexy-model-aidra-toying-her-pussy/").json
+            XarthunterItemPage("https://www.xarthunter.com/sexy-model-aidra-toying-her-pussy/").json
         )
 
     def test_video_item_page(self):
         log.info(
-            XarthunterVideoItemPage("https://www.xarthunter.com/keira-perfect-timing-video/").json
+            XarthunterItemPage("https://www.xarthunter.com/keira-perfect-timing-video/").json
         )
 
 

@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 from tsing_spider.util import LazySoup
 
 
-class BaseXarthunterItemPage(LazySoup):
+class XarthunterItemPage(LazySoup):
     def __init__(self, url: str):
         super().__init__(url)
 
@@ -43,26 +43,6 @@ class BaseXarthunterItemPage(LazySoup):
         return int(self.soup.find("span", attrs={"id": "thedown"}).get_text())
 
     @property
-    def json(self) -> dict:
-        base_dict = dict(
-            title=self.title,
-            author=self.author,
-            like_count=self.like_count,
-            dislike_count=self.dislike_count,
-        )
-        try:
-            base_dict["author_url"] = self.author_url
-            base_dict["author_id"] = self.author_id
-        except:
-            pass
-        return base_dict
-
-
-class XarthunterImageItemPage(BaseXarthunterItemPage):
-    def __init__(self, url: str):
-        super().__init__(url)
-
-    @property
     def image_urls(self) -> List[str]:
         urls = []
         for ul in self.soup.find_all("ul", attrs={"class": "list-justified2"}):
@@ -71,29 +51,46 @@ class XarthunterImageItemPage(BaseXarthunterItemPage):
         return urls
 
     @property
-    def json(self) -> dict:
-        doc = super(XarthunterImageItemPage, self).json
-        doc["image_urls"] = self.image_urls
-        return doc
-
-
-class XarthunterVideoItemPage(BaseXarthunterItemPage):
-    def __init__(self, url: str):
-        super().__init__(url)
-
-    @property
     def preview_image_url(self) -> str:
         return self.soup.find("video").get("poster")
 
     @property
     def mp4_video_url(self) -> str:
-        return self.soup.find("source", attrs={"type": "video/mp4"}).get("src")
+        return self.soup.find("video").find("source", attrs={"type": "video/mp4"}).get("src")
+
+    @property
+    def is_video_page(self):
+        try:
+            _ = self.mp4_video_url
+            return True
+        except:
+            return False
+
+    @property
+    def is_image_page(self):
+        if not self.is_video_page:
+            return len(self.image_urls) > 0
 
     @property
     def json(self) -> dict:
-        doc = super(XarthunterVideoItemPage, self).json
-        doc["preview_image_url"] = self.preview_image_url
-        doc["mp4_video_url"] = self.mp4_video_url
+        doc = dict(
+            title=self.title,
+            author=self.author,
+            like_count=self.like_count,
+            dislike_count=self.dislike_count,
+        )
+        if self.is_video_page:
+            doc["preview_image_url"] = self.preview_image_url
+            doc["mp4_video_url"] = self.mp4_video_url
+        elif self.is_image_page:
+            doc["image_urls"] = self.image_urls
+        else:
+            raise Exception("No useful content in this page")
+        try:
+            doc["author_url"] = self.author_url
+            doc["author_id"] = self.author_id
+        except:
+            pass
         return doc
 
 
@@ -121,7 +118,7 @@ class XarthunterImageIndexPage(BaseXarthunterIndexPage):
 
     @property
     def items(self):
-        return [XarthunterImageItemPage(x) for x in self._item_urls]
+        return [XarthunterItemPage(x) for x in self._item_urls]
 
     @staticmethod
     def create(page_index: int):
@@ -134,7 +131,7 @@ class XarthunterVideoIndexPage(BaseXarthunterIndexPage):
 
     @property
     def items(self):
-        return [XarthunterVideoItemPage(x) for x in self._item_urls]
+        return [XarthunterItemPage(x) for x in self._item_urls]
 
     @staticmethod
     def create(page_index: int):
