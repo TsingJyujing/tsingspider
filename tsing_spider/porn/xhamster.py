@@ -8,6 +8,7 @@ import json
 import logging
 import re
 from urllib.parse import quote
+
 from tsing_spider.util import LazySoup
 from tsing_spider.util import priority_get_from_dict
 
@@ -23,8 +24,9 @@ class BaseXhamsterIndex(LazySoup):
     @property
     def video_urls(self):
         return [
-            div.find("a", attrs={"class": "video-thumb__image-container thumb-image-container"}).get("href")
-            for div in self.soup.find_all("div", attrs={"class": "thumb-list__item video-thumb video-thumb--dated"})
+            div.find("a", attrs={"class": "video-thumb__image-container role-pop thumb-image-container"}).get("href")
+            for div in self.soup.find_all("div")
+            if div.get("data-video-id") is not None
         ]
 
     @property
@@ -66,18 +68,9 @@ class XhamsterVideo(LazySoup):
     @property
     def video_info(self):
         if self.__video_info is None:
-            scripts = [
-                repr(s)
-                for s in self.soup.find_all("script")
-                if repr(s).find("window.initials") >= 0
-            ]
-            if len(scripts) <= 0:
-                raise Exception("Can't find information <script> block")
-            elif len(scripts) > 1:
-                log.warning("Warning: <script> block after filtered more than 1")
-
+            script = repr(self.soup.find("script", attrs={"id": "initials-script"}))
             self.__video_info = json.loads(
-                re.findall(r"window.initials\s+=\s+(.*?)\n", scripts[0])[0].strip(" \n;")
+                re.findall(r"window.initials=(.*?);<\/script>", script, re.DOTALL)[0]
             )
         return self.__video_info
 
