@@ -14,11 +14,21 @@ class BaseXarthunterItemPage(LazySoup):
 
     @property
     def author(self) -> str:
-        return self.soup.find("div", attrs={"class": "link-btn"}).find("a").get_text()
+        author_block = self.soup.find("div", attrs={"class": "link-btn"})
+        if author_block.find("a") is not None:
+            return author_block.find("a").get_text()
+        elif author_block.find("div"):
+            return author_block.find("div").get_text()
+        else:
+            raise IndexError("Can't find author in this page")
 
     @property
     def author_url(self) -> str:
-        return self.soup.find("div", attrs={"class": "link-btn"}).find("a").get("href")
+        author_block = self.soup.find("div", attrs={"class": "link-btn"})
+        if author_block.find("a") is not None:
+            return author_block.find("a").get("href")
+        else:
+            raise IndexError("Can't find author URL in this page")
 
     @property
     def author_id(self) -> str:
@@ -34,14 +44,18 @@ class BaseXarthunterItemPage(LazySoup):
 
     @property
     def json(self) -> dict:
-        return dict(
+        base_dict = dict(
             title=self.title,
             author=self.author,
-            author_url=self.author_url,
-            author_id=self.author_id,
             like_count=self.like_count,
             dislike_count=self.dislike_count,
         )
+        try:
+            base_dict["author_url"] = self.author_url
+            base_dict["author_id"] = self.author_id
+        except:
+            pass
+        return base_dict
 
 
 class XarthunterImageItemPage(BaseXarthunterItemPage):
@@ -94,7 +108,9 @@ class BaseXarthunterIndexPage(LazySoup):
             urls = []
             for ul in self.soup.find_all("ul", attrs={"class": "gallery-a"}):
                 for li in ul.find_all("li"):
-                    urls.append(li.find("a").get("href"))
+                    url = li.find("a").get("href")
+                    if url.startswith("https://www.xarthunter.com/"):
+                        urls.append(url)
             self._item_urls_lazy = urls
         return self._item_urls_lazy
 

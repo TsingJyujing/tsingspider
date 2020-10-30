@@ -21,12 +21,12 @@ log = logging.getLogger(__file__)
 class XarthunterTest(unittest.TestCase):
     def test_image_index_page(self):
         log.info(
-            XarthunterImageIndexPage.create(2)._item_urls
+            "\n".join(XarthunterImageIndexPage.create(2)._item_urls)
         )
 
     def test_video_index_page(self):
         log.info(
-            XarthunterVideoIndexPage.create(2)._item_urls
+            "\n".join(XarthunterVideoIndexPage.create(2)._item_urls)
         )
 
     def test_image_item_page(self):
@@ -36,7 +36,7 @@ class XarthunterTest(unittest.TestCase):
 
     def test_video_item_page(self):
         log.info(
-            XarthunterVideoItemPage("https://www.xarthunter.com/jessica-model-couple-video/").json
+            XarthunterVideoItemPage("https://www.xarthunter.com/keira-perfect-timing-video/").json
         )
 
 
