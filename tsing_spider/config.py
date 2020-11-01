@@ -89,13 +89,17 @@ def set_caoliu_host(value: str):
 __COOKIES_PATH = None
 
 
-def create_default_request_session(
+def create_default_requests_session(
         retries_count: int,
         pool_connections: int,
         pool_maxsize: int
 ):
     """
-    Create a request session
+    Create request session with give parameters
+    @param retries_count: How many times to retry
+    @param pool_connections: The count of connections to cache
+    @param pool_maxsize: The max pool size
+    @return: requests session
     """
     session = requests.Session()
     session.mount(
@@ -125,7 +129,7 @@ def create_default_request_session(
     return session
 
 
-requests_session = create_default_request_session(
+requests_session = create_default_requests_session(
     retries_count=5,
     pool_connections=10,
     pool_maxsize=120
