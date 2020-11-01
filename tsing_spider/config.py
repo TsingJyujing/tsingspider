@@ -87,27 +87,48 @@ def set_caoliu_host(value: str):
 # Cookies相关设置
 
 __COOKIES_PATH = None
-requests_session = requests.Session()
 
-requests_session.mount(
-    "http",
-    HTTPAdapter(
-        max_retries=Retry(
-            total=5,
-            backoff_factor=0.1,
-            status_forcelist=[500, 502, 503, 504]
+
+def create_default_request_session(
+        retries_count: int,
+        pool_connections: int,
+        pool_maxsize: int
+):
+    """
+    Create a request session
+    """
+    session = requests.Session()
+    session.mount(
+        "http",
+        HTTPAdapter(
+            max_retries=Retry(
+                total=retries_count,
+                backoff_factor=0.1,
+                status_forcelist=[500, 502, 503, 504]
+            ),
+            pool_connections=pool_connections,
+            pool_maxsize=pool_maxsize
         )
     )
-)
-requests_session.mount(
-    "https",
-    HTTPAdapter(
-        max_retries=Retry(
-            total=5,
-            backoff_factor=0.1,
-            status_forcelist=[500, 502, 503, 504]
+    session.mount(
+        "https",
+        HTTPAdapter(
+            max_retries=Retry(
+                total=retries_count,
+                backoff_factor=0.1,
+                status_forcelist=[500, 502, 503, 504]
+            ),
+            pool_connections=pool_connections,
+            pool_maxsize=pool_maxsize
         )
     )
+    return session
+
+
+requests_session = create_default_request_session(
+    retries_count=5,
+    pool_connections=10,
+    pool_maxsize=120
 )
 
 
