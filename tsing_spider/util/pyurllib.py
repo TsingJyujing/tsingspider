@@ -12,8 +12,12 @@ import threading
 
 from bs4 import BeautifulSoup
 
-from tsing_spider.config import get_request_timeout, get_xml_decoder, get_request_header, \
+from tsing_spider.config import (
+    get_request_timeout,
+    get_xml_decoder,
+    get_request_header,
     get_request_session
+)
 
 log = logging.getLogger(__file__)
 

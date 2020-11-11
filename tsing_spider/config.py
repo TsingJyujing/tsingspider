@@ -30,7 +30,7 @@ def set_request_timeout(value: float):
 
 
 # 浏览器的User Agent参数
-__USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:68.0) Gecko/20100101 Firefox/68.0"
+__USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:82.0) Gecko/20100101 Firefox/82.0"
 
 
 def get_request_header(url: str = None, additional_header: dict = None):
@@ -166,7 +166,8 @@ def _init_cookies(cookie_jar: CookieJar, firefox_cookies_path: str):
     """
     Initialize cookies from firefox
     :param cookie_jar:
-    :param firefox_cookies_path:
+    :param firefox_cookies_path: Firefox Cookies SQLite file
+            For example, in linux, the cookies may at ~/.mozilla/firefox/*/cookies.sqlite
     :return:
     """
     if firefox_cookies_path is None:
