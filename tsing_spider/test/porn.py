@@ -143,7 +143,7 @@ class Sex8ccTest(unittest.TestCase):
         log.info("PageInfo:\n" + json.dumps(th.json, indent=2))
 
     def test_download_video(self):
-        ft = sex8cc.ForumThread("https://sex8.cc/thread-14371594-1-1.html")
+        ft = sex8cc.ForumThread("https://sex8.cc/thread-14413541-1-1.html")
         url = ft.m3u8_video_links[0]
         log.info(f"Downloading {url}")
         M3U8Downloader(url).download_to("test.ts")

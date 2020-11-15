@@ -42,10 +42,6 @@ class XVideoIndexPage(LazySoup):
             ]
         return self._video_id_list
 
-    @property
-    def url(self):
-        return self._url
-
 
 class XVideosVideoPage(LazySoup):
     def __init__(self, relative_uri: str = None, video_id: Union[int, str] = None, base_host: str = "www.xvideos.com"):
@@ -107,7 +103,3 @@ class XVideosVideoPage(LazySoup):
             preview_image_base = re.findall(r"html5player\.setThumbUrl\('(.*?)\.\d+\.jpg'\);", str(self.soup))[0]
             self._preview_images = ["{}.{}.jpg".format(preview_image_base, i + 1) for i in range(30)]
         return self._preview_images
-
-    @property
-    def url(self):
-        return self._url

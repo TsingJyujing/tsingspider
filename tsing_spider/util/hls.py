@@ -33,16 +33,16 @@ class M3U8Downloader:
             else:
                 log.info(f"Key found, method={key.method}")
             _aes = AES.new(http_get(key.absolute_uri), AES.MODE_CBC)
-            self._crypto_func = lambda data: _aes.decrypt(data)
+            self._decrypt_func = lambda data: _aes.decrypt(data)
         elif len(playlist_keys) == 0:
             log.info("No keys found in index file.")
-            self._crypto_func = lambda data: data
+            self._decrypt_func = lambda data: data
         else:
             raise Exception(f"Too much ({len(playlist_keys)}) keys found.")
 
     def data_stream(self):
         yield from (
-            self._crypto_func(http_get(seg.absolute_uri, headers=self.headers))
+            self._decrypt_func(http_get(seg.absolute_uri, headers=self.headers))
             for seg in self.playlist.segments
         )
 

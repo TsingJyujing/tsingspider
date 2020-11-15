@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """
 Created on 2017-2-3
-@author: Yuan Yi fan
+@author: Yuan Yifan
 
-Some wrapper function for http client APIs
+Some http client utility functions & classes
 """
 import logging
 import os
@@ -74,7 +74,7 @@ class LiteFileDownloader(threading.Thread):
         self.done = 0
 
     def run(self):
-        if not os.path.exists(self.filename):  # 已经下载过了
+        if not os.path.exists(self.filename):  # Already downloaded
             data = http_get(url=self.image_url)
             if data is not None:
                 with open(self.filename, 'wb') as fid:
@@ -134,7 +134,7 @@ class DownloadTask(threading.Thread):
 
 class LazyContent:
     """
-    懒加载的GET请求
+    Lazy-loaded URL resource
     """
 
     def __init__(self, url: str, headers: dict = None):
@@ -181,7 +181,7 @@ class LazyContent:
 
 class LazySoup(LazyContent):
     """
-    懒加载的Soup
+    Lazy-loaded URL resource, and parse by BeautifulSoup
     """
 
     def __init__(self, url: str, parser: str = None, headers: dict = None):
