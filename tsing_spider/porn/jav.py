@@ -13,6 +13,7 @@ from urllib.parse import urljoin
 from bs4 import BeautifulSoup
 
 from tsing_spider.util import LazySoup
+from tsing_spider.util.tools import create_magnet_uri
 
 log = logging.getLogger(__file__)
 
@@ -24,6 +25,7 @@ JAV_HOST = "javtorrent.re"
 JAV_CATEGORIES = [
     "censored", "uncensored", "iv"
 ]
+
 
 class JavItem(LazySoup):
     def __init__(self, url: str):
@@ -40,7 +42,12 @@ class JavItem(LazySoup):
         result = []
         for block in self._content.find_all("div", attrs={"class": "single-t"}):
             try:
-                result.append(re.findall(r"d=(.*?)$", block.find("a").get("href"))[0])
+                link = block.find("a").get("href")
+                dir_id = re.findall(r"jtl.re/d/(.*?)\.torrent", link)
+                if len(dir_id) <= 0:
+                    result.append(re.findall(r"d=(.*?)$", link)[0])
+                else:
+                    result.append(dir_id[0])
             except Exception as ex:
                 log.debug("Failed to parse single-t block", exc_info=ex)
         return result
@@ -101,6 +108,10 @@ class JavItem(LazySoup):
             ls.content
             for ls in self._torrent_ls
         ]
+
+    @property
+    def magnet_uris(self) -> List[str]:
+        return [create_magnet_uri(data) for data in self.torrents]
 
     @property
     def json(self):

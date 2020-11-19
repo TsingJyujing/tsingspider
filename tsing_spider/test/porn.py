@@ -61,10 +61,12 @@ class JavTest(unittest.TestCase):
         ])
 
     def test_item(self):
-        test_item = JavItem("http://javtorrent.re/censored/183576/")
+        test_item = JavItem("http://javtorrent.re/uncensored/202571/")
         log.info(test_item.json)
         for torrent in test_item.torrents:
             log.info(f"Torrent Size: {len(torrent)}")
+        for magnet_uri in test_item.magnet_uris:
+            log.info(f"Magnet URI: {magnet_uri}")
         log.info(f"Image Size: {len(test_item.image)}")
 
 

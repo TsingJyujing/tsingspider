@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="tsingspider",
-    version="1.4.0",
+    version="1.4.1",
     author="Tsing Jyujing",
     author_email="nigel434@gmail.com",
     description="A spider library of several data sources",
@@ -30,6 +30,7 @@ setup(
         "BeautifulSoup4",
         "lxml",
         "pytz",
-        "m3u8"
+        "m3u8",
+        "bencodepy"
     ],
 )
