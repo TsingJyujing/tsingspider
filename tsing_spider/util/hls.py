@@ -1,7 +1,9 @@
 import logging
+from typing import Iterable, Tuple
 
 import m3u8
 from Cryptodome.Cipher import AES
+from m3u8 import Segment
 
 from .pyurllib import http_get
 
@@ -41,12 +43,23 @@ class M3U8Downloader:
             raise Exception(f"Too much ({len(playlist_keys)}) keys found.")
 
     def data_stream(self):
+        yield from (data for _, data in self.segment_data_generator())
+
+    def segment_data_generator(self) -> Iterable[Tuple[Segment, bytes]]:
         yield from (
-            self._decrypt_func(http_get(seg.absolute_uri, headers=self.headers))
+            (
+                seg,
+                self._decrypt_func(http_get(seg.absolute_uri, headers=self.headers))
+            )
             for seg in self.playlist.segments
         )
 
     def download_to(self, target: str):
+        """
+        Download ts file to one file
+        @param target:
+        @return:
+        """
         with open(target, "wb") as fp:
             for ds in self.data_stream():
                 fp.write(ds)
