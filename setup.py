@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="tsingspider",
-    version="1.4.1",
+    version="1.4.2",
     author="Tsing Jyujing",
     author_email="nigel434@gmail.com",
     description="A spider library of several data sources",
@@ -31,6 +31,7 @@ setup(
         "lxml",
         "pytz",
         "m3u8",
-        "bencodepy"
+        "bencodepy",
+        "pycryptodomex",
     ],
 )

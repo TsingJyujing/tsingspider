@@ -1,6 +1,6 @@
 # DataSpider
 
-[![CircleCI](https://circleci.com/gh/TsingJyujing/DataSpider.svg?style=svg)](https://circleci.com/gh/TsingJyujing/DataSpider)
+![Upload Python Package](https://github.com/TsingJyujing/DataSpider/workflows/Upload%20Python%20Package/badge.svg)
 
 A spider framework with several internal spiders.
 
