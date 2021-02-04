@@ -5,3 +5,4 @@ pytz
 pytest
 m3u8
 pycryptodomex
+bencodepy

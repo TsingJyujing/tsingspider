@@ -11,7 +11,8 @@ log = logging.getLogger(__file__)
 
 
 class M3U8Downloader:
-    def __init__(self, index_url: str, headers: dict = None):
+    def __init__(self, index_url: str, headers: dict = None, retry_count: int = 5):
+        self.retry_count = retry_count
         self.playlist = m3u8.load(index_url)
         self.headers = headers
         if len(self.playlist.playlists) > 0:
@@ -46,13 +47,24 @@ class M3U8Downloader:
         yield from (data for _, data in self.segment_data_generator())
 
     def segment_data_generator(self) -> Iterable[Tuple[Segment, bytes]]:
-        yield from (
-            (
-                seg,
-                self._decrypt_func(http_get(seg.absolute_uri, headers=self.headers))
-            )
-            for seg in self.playlist.segments
-        )
+        total = len(self.playlist.segments)
+        for i, seg in enumerate(self.playlist.segments):
+            log.debug(f"Downloading {i + 1}/{total} segment: {seg.absolute_uri}")
+            data = None
+            ex = None
+            for j in range(self.retry_count):
+                # noinspection PyBroadException
+                try:
+                    data = self._decrypt_func(http_get(seg.absolute_uri, headers=self.headers))
+                except Exception as ex:
+                    log.debug(f"Failed while downloading segment {i + 1}/{total} retry {j + 1}/{self.retry_count}")
+            if data is None:
+                if ex is not None:
+                    raise ex
+                else:
+                    raise ValueError(f"Downloaded data segment {i + 1}/{total} is empty.")
+            else:
+                yield seg, data
 
     def download_to(self, target: str):
         """
