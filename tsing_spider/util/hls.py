@@ -56,6 +56,7 @@ class M3U8Downloader:
                 # noinspection PyBroadException
                 try:
                     data = self._decrypt_func(http_get(seg.absolute_uri, headers=self.headers))
+                    break
                 except Exception as ex:
                     log.debug(f"Failed while downloading segment {i + 1}/{total} retry {j + 1}/{self.retry_count}")
             if data is None:
