@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="tsingspider",
-    version="1.4.4",
+    version="1.4.5",
     author="Tsing Jyujing",
     author_email="nigel434@gmail.com",
     description="A spider library of several data sources",
