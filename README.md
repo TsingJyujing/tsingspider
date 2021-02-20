@@ -4,6 +4,12 @@
 
 A spider framework with several internal spiders.
 
+## Thanks
+
+Thanks [JetBrains](https://www.jetbrains.com/?from=yifan.yuan) provided FREE [PyCharm](https://www.jetbrains.com/pycharm/?from=yifan.yuan) Professional for this project.
+
+[<img src=".jetbrains/jetbrains.png" width="180">](https://www.jetbrains.com/?from=yifan.yuan)
+
 ## Install
 
 ```bash
@@ -44,3 +50,4 @@ class YourOwnSpider(LazySoup):
         """
         pass
 ```
+
