@@ -6,6 +6,7 @@ Created on 2017-2-4
 
 配置文件，记录各种配置
 """
+import logging
 import re
 import sqlite3
 from http.cookiejar import CookieJar, Cookie
@@ -18,6 +19,8 @@ from urllib3.util import Retry
 
 # 响应超时
 __REQUEST_TIMEOUT = 25
+
+log = logging.getLogger(__file__)
 
 
 def get_request_timeout():
@@ -40,7 +43,10 @@ def get_request_header(url: str = None, additional_header: dict = None):
         'Accept-Language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
     }
     if url is not None:
-        headers['Host'] = re.findall('://.*?/', url, re.DOTALL)[0][3:-1]
+        try:
+            headers['Host'] = re.findall('://.*?/', url, re.DOTALL)[0][3:-1]
+        except Exception as ex:
+            log.warning(f"Error while extracting Host from {url}", exc_info=ex)
     if additional_header is not None:
         for k, v in additional_header.items():
             headers[str(k)] = str(v)
