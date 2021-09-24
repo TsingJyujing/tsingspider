@@ -13,7 +13,7 @@ log = logging.getLogger(__file__)
 class M3U8Downloader:
     def __init__(self, index_url: str, headers: dict = None, retry_count: int = 5):
         self.retry_count = retry_count
-        self.playlist = m3u8.load(index_url)
+        self.playlist = m3u8.load(index_url, headers=headers)
         self.headers = headers
         if len(self.playlist.playlists) > 0:
             bw_uri = sorted(

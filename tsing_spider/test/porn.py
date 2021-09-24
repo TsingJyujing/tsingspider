@@ -4,6 +4,7 @@ import unittest
 
 import pytest
 
+from tsing_spider.config import get_request_header
 from tsing_spider.porn import xhamster, sex8cc, caoliu
 from tsing_spider.porn.everia_club import EveriaIndex, EveriaPage
 from tsing_spider.porn.jav import JavItem, BaseJavIndex
@@ -43,7 +44,8 @@ class XarthunterTest(unittest.TestCase):
     def test_image_item_page(self):
         log.info(
             XarthunterItemPage(
-                "https://www.xarthunter.com/top-class-blonde-model-gets-pleased-with-nice-sex-by-her-man-17732/").json
+                "https://www.xarthunter.com/top-class-blonde-model-gets-pleased-with-nice-sex-by-her-man-17732/"
+            ).json
         )
 
     def test_video_item_page(self):
@@ -145,10 +147,16 @@ class Sex8ccTest(unittest.TestCase):
         log.info("PageInfo:\n" + json.dumps(th.json, indent=2))
 
     def test_download_video(self):
-        ft = sex8cc.ForumThread("https://sex8.cc/thread-14413541-1-1.html")
+        page_url = "https://sex8.cc/thread-15607383-1-2.html"
+        ft = sex8cc.ForumThread(page_url)
         url = ft.m3u8_video_links[0]
         log.info(f"Downloading {url}")
-        M3U8Downloader(url).download_to("test.ts")
+        M3U8Downloader(
+            url,
+            headers=get_request_header(url, additional_header={"Referer": page_url})
+        ).download_to(
+            "test.ts"
+        )
 
 
 if __name__ == '__main__':

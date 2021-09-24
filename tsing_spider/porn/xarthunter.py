@@ -45,7 +45,7 @@ class XarthunterItemPage(LazySoup):
     @property
     def image_urls(self) -> List[str]:
         urls = []
-        for ul in self.soup.find_all("ul", attrs={"class": "list-justified2"}):
+        for ul in self.soup.find_all("ul", attrs={"class": "list-gallery"}):
             for a in ul.find_all("a"):
                 urls.append(a.get("href"))
         return urls

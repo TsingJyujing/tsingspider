@@ -9,6 +9,7 @@ import re
 import traceback
 from functools import lru_cache
 from typing import List
+from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
@@ -347,9 +348,9 @@ class ForumThread(ForumThreadComment):
         if video_blocks is not None:
             for video_block in video_blocks:
                 if video_block.get("data-high") is not None:
-                    video_urls.append(video_block.get("data-high"))
+                    video_urls.append(urljoin(self.url, video_block.get("data-high")))
                 elif video_block.get("data-normal") is not None:
-                    video_urls.append(video_block.get("data-normal"))
+                    video_urls.append(urljoin(self.url, video_block.get("data-normal")))
         return video_urls
 
     @property
@@ -404,9 +405,10 @@ class ForumPage(LazySoup):
                 style_check = True
             else:
                 style_check = style.find("bold") < 0
-            return  type(tb.get("id")) is str \
+            return type(tb.get("id")) is str \
                    and tb.get("id").startswith("normalthread_") \
                    and style_check
+
         # 获取非置顶帖子列表
         return [re.sub(r"-\d+-\d+.html", "-1-1.html", url) for url in (
             "https://{}/{}".format(self.base_host, tb.find("a", attrs={"class": "s xst"}).get("href"))

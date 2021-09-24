@@ -100,7 +100,8 @@ class JavItem(LazySoup):
                 torrents.append(LazySoup(
                     url=f"http://jtl.re/d/{torrent_resid}.torrent",
                     headers={
-                        "Referer": f"http://1on.re/d.php?d={torrent_resid}"
+                        "Host": "jtl.re",
+                        "Referer": "http://javtorrent.re/"
                     }
                 ))
             self._torrent_ls = torrents
