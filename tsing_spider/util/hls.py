@@ -1,5 +1,6 @@
 import logging
 from typing import Iterable, Tuple
+from urllib.parse import urlparse
 
 import m3u8
 from Cryptodome.Cipher import AES
@@ -55,7 +56,9 @@ class M3U8Downloader:
             for j in range(self.retry_count):
                 # noinspection PyBroadException
                 try:
-                    data = self._decrypt_func(http_get(seg.absolute_uri, headers=self.headers))
+                    headers = self.headers.copy()
+                    headers["Host"] = urlparse(seg.absolute_uri).netloc
+                    data = self._decrypt_func(http_get(seg.absolute_uri, headers=headers))
                     break
                 except Exception as tex:
                     log.debug(f"Failed while downloading segment {i + 1}/{total} retry {j + 1}/{self.retry_count}")
