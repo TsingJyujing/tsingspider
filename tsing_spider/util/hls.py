@@ -32,12 +32,15 @@ class M3U8Downloader:
         playlist_keys = [x for x in self.playlist.keys if x is not None]
         if len(playlist_keys) == 1:
             key = self.playlist.keys[0]
-            if not key.method.startswith("AES"):
+            if key.method.lower() == "none":
+                log.info(f"Key method is {key.method}, do not decrypt.")
+                self._decrypt_func = lambda data: data
+            elif not key.method.startswith("AES"):
                 raise Exception(f"Unsupported crypt method: {key.method}")
             else:
                 log.info(f"Key found, method={key.method}")
-            _aes = AES.new(http_get(key.absolute_uri), AES.MODE_CBC)
-            self._decrypt_func = lambda data: _aes.decrypt(data)
+                _aes = AES.new(http_get(key.absolute_uri), AES.MODE_CBC)
+                self._decrypt_func = lambda data: _aes.decrypt(data)
         elif len(playlist_keys) == 0:
             log.info("No keys found in index file.")
             self._decrypt_func = lambda data: data
