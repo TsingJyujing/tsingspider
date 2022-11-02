@@ -7,6 +7,7 @@ Created on 2017-2-4
 配置文件，记录各种配置
 """
 import logging
+import os
 import re
 import sqlite3
 from http.cookiejar import CookieJar, Cookie
@@ -222,4 +223,4 @@ def set_cookies(firefox_cookies_path: Optional[str]):
 
 
 # If we have default cookies path, set here
-set_cookies(None)
+set_cookies(os.environ.get("FIREFOX_COOKIES"))
