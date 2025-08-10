@@ -25,11 +25,13 @@ class EveriaTest(unittest.TestCase):
         log.info(EveriaIndex.create(2).pages)
 
     def test_page(self):
-        log.info(EveriaPage(
-            'https://everia.club/2020/11/08/ai-takanashi-'
-            '%e9%ab%98%e6%a2%a8%e3%81%82%e3%81%84-minisuka-'
-            'tv-2020-10-29-limited-gallery-3-1/'
-        ).json)
+        log.info(
+            EveriaPage(
+                "https://everia.club/2020/11/08/ai-takanashi-"
+                "%e9%ab%98%e6%a2%a8%e3%81%82%e3%81%84-minisuka-"
+                "tv-2020-10-29-limited-gallery-3-1/"
+            ).json
+        )
 
 
 class XarthunterTest(unittest.TestCase):
@@ -50,17 +52,16 @@ class XarthunterTest(unittest.TestCase):
 
     def test_video_item_page(self):
         log.info(
-            XarthunterItemPage("https://www.xarthunter.com/keira-perfect-timing-video/").json
+            XarthunterItemPage(
+                "https://www.xarthunter.com/keira-perfect-timing-video/"
+            ).json
         )
 
 
 class JavTest(unittest.TestCase):
     def test_index_page(self):
         bi = BaseJavIndex("h.javtorrent.re", category="h-manga", page=1)
-        log.info([
-            item.url
-            for item in bi.items
-        ])
+        log.info([item.url for item in bi.items])
 
     def test_item(self):
         test_item = JavItem("http://javtorrent.re/uncensored/202571/")
@@ -90,7 +91,9 @@ class XhamsterTest(unittest.TestCase):
         log.info(xhamster.XhamsterSearch("asian creampie").video_urls)
 
 
-@pytest.mark.skip(reason="This unit test failed in CircleCI, but works in my local, maybe network problem")
+@pytest.mark.skip(
+    reason="This unit test failed in CircleCI, but works in my local, maybe network problem"
+)
 class XvideosTest(unittest.TestCase):
 
     def test_index_page(self):
@@ -99,17 +102,23 @@ class XvideosTest(unittest.TestCase):
 
     def test_video_page(self):
         page = XVideosVideoPage(video_id=XVideoIndexPage(0).video_id_list[0])
-        log.info("PageInfo:\n" + json.dumps({
-            "title": page.title,
-            "video_link": page.video_link,
-            "preview_images": page.preview_images,
-            "categories": page.categories,
-            "id": page.video_id,
-            "uri": page.relative_uri,
-            "url": page.url,
-            "size": page.size,
-            "duration": page.duration
-        }, indent=2))
+        log.info(
+            "PageInfo:\n"
+            + json.dumps(
+                {
+                    "title": page.title,
+                    "video_link": page.video_link,
+                    "preview_images": page.preview_images,
+                    "categories": page.categories,
+                    "id": page.video_id,
+                    "uri": page.relative_uri,
+                    "url": page.url,
+                    "size": page.size,
+                    "duration": page.duration,
+                },
+                indent=2,
+            )
+        )
 
 
 class CaoliuTest(unittest.TestCase):
@@ -121,9 +130,7 @@ class CaoliuTest(unittest.TestCase):
         log.info("setUpClass successfully with url={}".format(urls[0]))
 
     def test_get_title(self):
-        log.info(
-            self.thread.json
-        )
+        log.info(self.thread.json)
 
 
 class Sex8ccTest(unittest.TestCase):
@@ -139,10 +146,7 @@ class Sex8ccTest(unittest.TestCase):
     def test_forum_page_thread(self):
         f = sex8cc.ForumPage(157, 1)
         urls = f.thread_list_url
-        log.info("Get {} urls: \n{}".format(
-            len(urls),
-            "\n".join(urls)
-        ))
+        log.info("Get {} urls: \n{}".format(len(urls), "\n".join(urls)))
         th = sex8cc.ForumThread(urls[0])
         log.info("PageInfo:\n" + json.dumps(th.json, indent=2))
 
@@ -153,11 +157,9 @@ class Sex8ccTest(unittest.TestCase):
         log.info(f"Downloading {url}")
         M3U8Downloader(
             url,
-            headers=get_request_header(url, additional_header={"Referer": page_url})
-        ).download_to(
-            "test.ts"
-        )
+            headers=get_request_header(url, additional_header={"Referer": page_url}),
+        ).download_to("test.ts")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

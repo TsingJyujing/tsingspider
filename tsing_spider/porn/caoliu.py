@@ -9,6 +9,7 @@ import logging
 import re
 import time
 from typing import List
+from urllib.parse import urljoin, urlparse
 
 from tsing_spider.config import get_caoliu_host
 from tsing_spider.util import LazySoup, process_html_string
@@ -19,7 +20,8 @@ log = logging.getLogger(__file__)
 class CaoliuIndexPage(LazySoup):
     def __init__(self, page_index: int):
         super().__init__(
-            "https://%s/thread0806.php?fid=16&search=&page=%d" % (get_caoliu_host(), page_index)
+            "https://%s/thread0806.php?fid=16&search=&page=%d"
+            % (get_caoliu_host(), page_index)
         )
 
     @staticmethod
@@ -39,18 +41,20 @@ class CaoliuIndexPage(LazySoup):
 
     @property
     def thread_urls(self):
-        h3blocks = self.soup.find(name="tbody", attrs={"style": "table-layout:fixed;"}).find_all("h3")
+        h3blocks = self.soup.find(
+            name="tbody", attrs={"style": "table-layout:fixed;"}
+        ).find_all("h3")
         return_value = []
         for h3block in h3blocks:
             try:
-                url = "https://%s/%s" % (get_caoliu_host(), h3block.a.get("href"))
-                if h3block.a.get("href")[:8] != "htm_data":
+                url = urljoin(f"https://{get_caoliu_host()}", h3block.a.get("href"))
+                if not urlparse(url).path.startswith("/htm_data"):
                     raise ValueError("Not a page url")
                 if self.__get_font_color(h3block.a) in ("red", "blue"):
                     raise Exception("Not a valid thread url")
                 return_value.append(url)
-            except:
-                pass
+            except Exception as ex:
+                log.warning("Error occurred while parsing thread URL", exc_info=ex)
         return return_value
 
 
@@ -67,16 +71,14 @@ class CaoliuThreadComment(LazySoup):
 
     @property
     def comments(self):
-        return [
-            process_html_string(c.get_text())
-            for c in self.content_list
-        ]
+        return [process_html_string(c.get_text()) for c in self.content_list]
 
 
 # Test page for developing: https://t66y.com/htm_data/1912/7/3748347.html
 
+
 class CaoliuThread(CaoliuThreadComment):
-    def __init__(self, url: str, delay:float = 0.0):
+    def __init__(self, url: str, delay: float = 0.0):
         super().__init__(url)
         self._page_buffer = dict()
         self.delay = delay
@@ -112,10 +114,7 @@ class CaoliuThread(CaoliuThreadComment):
         page_selector = self.soup.find("a", attrs={"class": "w70"})
         if page_selector is not None:
             return int(
-                re.findall(
-                    r"\d+/(\d+)",
-                    page_selector.find("input").get("value")
-                )[0]
+                re.findall(r"\d+/(\d+)", page_selector.find("input").get("value"))[0]
             )
         else:
             return 1
@@ -134,9 +133,7 @@ class CaoliuThread(CaoliuThreadComment):
         return int(re.findall(r"/(\d+).html", self.url)[0])
 
     def _get_comment_page_url(self, page_index: int):
-        return "https://t66y.com/read.php?tid={}&page={}".format(
-            self.tid, page_index
-        )
+        return "https://t66y.com/read.php?tid={}&page={}".format(self.tid, page_index)
 
     def _page(self, page_index: int) -> CaoliuThreadComment:
         if page_index not in self._page_buffer:
@@ -153,5 +150,5 @@ class CaoliuThread(CaoliuThreadComment):
             title=self.title,
             image_list=self.image_list,
             comments=self.all_comments,
-            content_text=self.content_text
+            content_text=self.content_text,
         )

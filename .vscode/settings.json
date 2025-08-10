@@ -1,0 +1,31 @@
+{
+  "python.analysis.typeCheckingMode": "off",
+  "python.languageServer": "Pylance",
+  "python.terminal.activateEnvironment": true,
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/*/**": true
+  },
+  "python.testing.unittestEnabled": true,
+  "python.testing.pytestEnabled": false,
+  "python.testing.autoTestDiscoverOnSaveEnabled": true,
+  "files.exclude": {
+    ".venv/": true,
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/*.pyc": { "when": "$(basename).py" },
+    "**/__pycache__": true,
+    "**/.ipynb_checkpoints": true
+  },
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": { "source.organizeImports": "explicit" },
+  "autoDocstring.docstringFormat": "sphinx-notypes",
+  "autoDocstring.generateDocstringOnEnter": true,
+  "todo-tree.tree.scanMode": "current file",
+  "python.testing.unittestArgs": ["-v", "-s", ".", "-p", "test_*.py"]
+}

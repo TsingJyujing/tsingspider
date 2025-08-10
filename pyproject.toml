@@ -1,0 +1,18 @@
+[project]
+name = "tsingspider"
+version = "1.5.0"
+description = "A spider library of several data sources"
+readme = "README.md"
+urls = { github = "https://github.com/TsingJyujing/DataSpider" }
+
+requires-python = ">=3.9"
+dependencies = [
+    "beautifulsoup4>=4.13.4",
+    "bencodepy>=0.9.5",
+    "lxml>=6.0.0",
+    "m3u8>=6.0.0",
+    "pycryptodomex>=3.23.0",
+    "pytest>=8.4.1",
+    "pytz>=2025.2",
+    "requests>=2.32.4",
+]
